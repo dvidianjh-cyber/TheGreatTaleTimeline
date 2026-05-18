@@ -1,6 +1,13 @@
 # Changelog
 
 All notable changes to The Great Tale Timeline are documented here.
+## [v0.2.0] — 2026-05-18
+
+### Added
+- **Relative Date Lifespans**: Extended the input-centric dating system to entity lifespans. Entities can now have their births, deaths, and departures defined using relative epoch units (e.g. `FA`, `SA`, `TA`) instead of only absolute Time Units (`TU`).
+- **Reactive Data Editor Integration**: Updated the Data Editor Modal to support editing relative lifespans dynamically. The user can change birth, death, departure, and the date unit, and the timeline recomputes and re-renders reactively.
+- **Backwards Compatibility**: Seamlessly supports existing absolute temporal lifespans and auto-populates legacy fields during loading and editing.
+- **Sample Dataset Migration**: Converted major historical figures (Aragorn II Elessar, Durin the Deathless, Eärendil) to use relative epoch dates.
 
 ## [v0.1.0] — 2026-05-15
 

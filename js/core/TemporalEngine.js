@@ -89,6 +89,71 @@ class TemporalEngine {
         return value * factor;
     }
 
+    /**
+     * Get the conversion factor for an epoch.
+     * @param {Object} epoch
+     * @returns {number}
+     */
+    getEpochConversionFactor(epoch) {
+        if (!epoch) return 1;
+        const systemId = epoch.time_system || epoch.primary_system;
+        const system = this.getTimeSystem(systemId);
+        if (!system) return 1;
+        return system.conversion_factor || system.base_unit || 1;
+    }
+
+    /**
+     * Convert a relative coordinate (in an epoch abbreviation or system) to absolute TU.
+     * @param {number} val
+     * @param {string} dateUnit
+     * @returns {number}
+     */
+    relativeToAbsoluteTU(val, dateUnit) {
+        if (val === undefined || val === null) return 0;
+        if (!dateUnit || dateUnit === 'TU') return val;
+
+        const epoch = this._epochs.find(e => e.abbreviation === dateUnit || e.id === dateUnit);
+        if (epoch) {
+            const factor = this.getEpochConversionFactor(epoch);
+            // Formula: tu = D * conversion_factor + E.start_tu - 1
+            return val * factor + epoch.start_tu - 1;
+        }
+
+        const system = this.getTimeSystem(dateUnit);
+        if (system) {
+            const factor = system.conversion_factor || system.base_unit || 1;
+            return val * factor;
+        }
+
+        return val;
+    }
+
+    /**
+     * Convert an absolute TU back to relative units.
+     * @param {number} tu
+     * @param {string} dateUnit
+     * @returns {number}
+     */
+    absoluteToRelativeDate(tu, dateUnit) {
+        if (tu === undefined || tu === null) return 0;
+        if (!dateUnit || dateUnit === 'TU') return tu;
+
+        const epoch = this._epochs.find(e => e.abbreviation === dateUnit || e.id === dateUnit);
+        if (epoch) {
+            const factor = this.getEpochConversionFactor(epoch);
+            // Formula: D = (tu - E.start_tu + 1) / conversion_factor
+            return (tu - epoch.start_tu + 1) / factor;
+        }
+
+        const system = this.getTimeSystem(dateUnit);
+        if (system) {
+            const factor = system.conversion_factor || system.base_unit || 1;
+            return tu / factor;
+        }
+
+        return tu;
+    }
+
     // ─── Epoch Queries ──────────────────────────────────
 
     /**
@@ -188,9 +253,9 @@ class TemporalEngine {
      * @returns {string} Formatted epoch-relative label.
      */
     formatEpochLabel(tu, epoch, exact = false) {
-        if (!epoch || !epoch.ruler) return '';
+        if (!epoch) return '';
 
-        const factor = epoch.ruler.conversion_factor || 1;
+        const factor = this.getEpochConversionFactor(epoch);
         const localTU = tu - epoch.start_tu;
         const localValue = localTU / factor + 1; // Year 1 is the first year
 
@@ -211,7 +276,8 @@ class TemporalEngine {
             displayValue = (Math.round(localValue / magnitude) * magnitude).toLocaleString();
         }
 
-        return `${displayValue} ${epoch.ruler.abbreviation || ''}`;
+        const abbrev = epoch.abbreviation || epoch.id || '';
+        return `${displayValue} ${abbrev}`;
     }
 
     /**
@@ -267,7 +333,7 @@ class TemporalEngine {
      * Adapts density to the visible portion of the epoch.
      */
     calculateEpochRulerTicks(viewportWidth, epoch) {
-        if (!epoch || !epoch.ruler) return { ticks: [] };
+        if (!epoch) return { ticks: [] };
 
         const pptu = state.pixelsPerTU;
         const visRange = state.visibleTimeRange;
@@ -293,7 +359,7 @@ class TemporalEngine {
         
         // Target ~8-12 major ticks across the visible portion of this epoch
         // This ensures epochs of any width get a readable number of ticks
-        const factor = epoch.ruler.conversion_factor || 1;
+        const factor = this.getEpochConversionFactor(epoch);
         const rawLocalInterval = (visibleRange / 10) / factor;
         const majorIntervalLocal = this._snapToNiceNumber(rawLocalInterval);
 

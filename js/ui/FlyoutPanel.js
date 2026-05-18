@@ -202,13 +202,12 @@ class FlyoutPanel {
 
         let html = '';
         for (const epoch of epochs) {
-            if (!epoch.ruler) continue;
-
             const checked = activeRulers.has(epoch.id) ? 'checked' : '';
+            const label = epoch.label || epoch.name || epoch.id;
             html += `
                 <label class="flyout-toggle">
                     <input type="checkbox" data-epoch-ruler-id="${epoch.id}" ${checked} />
-                    <span>${epoch.ruler.label || epoch.label}</span>
+                    <span>${label}</span>
                 </label>
             `;
         }

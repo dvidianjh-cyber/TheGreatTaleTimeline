@@ -168,14 +168,14 @@ class BiographicalRenderer {
             // ── Event markers along the bar ──
             const events = dataStore.getEventsByEntity(entity.id);
             const sortedEvents = [...events].sort((a, b) => {
-                const durA = (a.time_extent.end || a.time_extent.start) - a.time_extent.start;
-                const durB = (b.time_extent.end || b.time_extent.start) - b.time_extent.start;
+                const durA = (a.end_tu || a.start_tu) - a.start_tu;
+                const durB = (b.end_tu || b.start_tu) - b.start_tu;
                 return durB - durA;
             });
 
             for (const evt of sortedEvents) {
-                const startTU = evt.time_extent.start;
-                const endTU = evt.time_extent.end || startTU;
+                const startTU = evt.start_tu;
+                const endTU = evt.end_tu || startTU;
                 const isRange = endTU > startTU;
                 
                 const evtX = temporalEngine.tuToPixel(startTU);

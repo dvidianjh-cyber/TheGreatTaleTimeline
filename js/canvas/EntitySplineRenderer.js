@@ -75,7 +75,7 @@ class EntitySplineRenderer {
 
         for (const evt of events) {
             if (!evt.lane_id) continue;
-            const x = temporalEngine.tuToPixel(evt.time_extent.start);
+            const x = temporalEngine.tuToPixel(evt.start_tu);
             const y = laneRenderer.getLaneY(evt.lane_id);
             rawPoints.push({ x, y });
         }

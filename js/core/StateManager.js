@@ -278,6 +278,16 @@ class StateManager {
     }
 
     /**
+     * Bulk-set active epoch rulers.
+     * @param {string[]} epochIds
+     */
+    setActiveEpochRulers(epochIds) {
+        this._state.activeEpochRulers = new Set(epochIds);
+        bus.emit(Events.EPOCH_RULER_CHANGED, { rulers: [...this._state.activeEpochRulers] });
+        bus.emit(Events.RENDER_DIRTY);
+    }
+
+    /**
      * @param {Object} config
      */
     setWorldConfig(config) {

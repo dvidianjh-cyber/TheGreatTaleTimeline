@@ -10,6 +10,7 @@ import gsap from 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/+esm';
 import bus, { Events } from '../core/EventBus.js';
 import state from '../core/StateManager.js';
 import flyoutPanel from './FlyoutPanel.js';
+import dataStore from '../data/DataStore.js';
 
 class PanelController {
     constructor() {
@@ -71,6 +72,9 @@ class PanelController {
                 <button class="toolbar-btn" id="btn-export" title="Export Data">
                     <i data-lucide="download"></i>
                 </button>
+                <button class="toolbar-btn" id="btn-edit-data" title="Edit Data">
+                    <i data-lucide="edit"></i>
+                </button>
                 <button class="toolbar-btn" id="btn-flyout" title="Filters & Visibility (V)">
                     <i data-lucide="sliders-horizontal"></i>
                 </button>
@@ -115,13 +119,38 @@ class PanelController {
             state.setZoomY(parseFloat(e.target.value));
         });
 
-        this._toolbar.querySelector('#btn-fit').addEventListener('click', () => {
-            state.setZoomX(1);
+        const fitToData = () => {
+            if (!dataStore.hasData) return;
+            const { minTu, maxTu } = dataStore.getTimeExtents();
+            const totalTu = maxTu - minTu;
+            
+            // Calculate necessary zoomX so that totalTu fits in viewportWidth
+            // zoomX = (viewportWidth / totalTu) / 0.05
+            // Provide a small margin (e.g., 5% on each side) -> multiply by 0.9
+            const viewportWidth = state.viewportWidth || window.innerWidth;
+            let targetZoomX = ((viewportWidth * 0.9) / (totalTu || 1000)) / 0.05;
+            
+            // Clamp to reasonable limits
+            targetZoomX = Math.max(0.01, Math.min(targetZoomX, 10));
+
+            // Set zoom and then pan to center
+            state.setZoomX(targetZoomX);
             state.setZoomY(1);
-            state.setPan(0, 0);
-            sliderX.value = 0;
-            sliderY.value = 1;
-        });
+            
+            // Pan so that minTu starts at 5% of viewport width
+            // panOffset.x is negative. -panX / pptu = startTu
+            // We want startTu to map to a panX that leaves a margin.
+            const pptu = state.pixelsPerTU;
+            const marginX = viewportWidth * 0.05;
+            const targetPanX = -(minTu * pptu) + marginX;
+            
+            state.setPan(targetPanX, 0);
+
+            if (sliderX) sliderX.value = tuToVal(targetZoomX);
+            if (sliderY) sliderY.value = 1;
+        };
+
+        this._toolbar.querySelector('#btn-fit').addEventListener('click', fitToData);
 
         // Listen for state changes to sync sliders (e.g. from mouse wheel)
         bus.on(Events.ZOOM_CHANGED, ({ zoomX, zoomY }) => {
@@ -143,13 +172,23 @@ class PanelController {
         this._toolbar.querySelector('#btn-export').addEventListener('click', () => {
             bus.emit(Events.DATA_EXPORTED);
         });
+
+        // Edit Data
+        const btnEditData = this._toolbar.querySelector('#btn-edit-data');
+        if (btnEditData) {
+            btnEditData.addEventListener('click', () => {
+                bus.emit(Events.PANEL_TOGGLED, { panel: 'edit', open: true });
+            });
+        }
         
-        // Data Loaded listener to update world name
+        // Data Loaded listener to update world name and fit view
         bus.on(Events.DATA_LOADED, () => {
             const worldNameEl = this._toolbar.querySelector('#header-world-name');
             if (worldNameEl && state.worldConfig) {
                 worldNameEl.textContent = state.worldConfig.world_name;
             }
+            // Add a slight delay to ensure viewportWidth is set if this is on boot
+            setTimeout(fitToData, 50);
         });
     }
 

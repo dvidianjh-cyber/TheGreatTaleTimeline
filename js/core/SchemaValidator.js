@@ -68,7 +68,7 @@ class SchemaValidator {
             config.time_systems.forEach((ts, i) => {
                 if (!ts.id) errors.push(`time_systems[${i}].id is required.`);
                 if (!ts.name) errors.push(`time_systems[${i}].name is required.`);
-                if (typeof ts.base_unit !== 'number' && typeof ts.conversion_factor !== 'number') {
+                if (typeof ts.base_unit !== 'number' && typeof ts.conversion_factor !== 'number' && !ts.isPrimary) {
                     errors.push(`time_systems[${i}] must have either base_unit or conversion_factor.`);
                 }
             });
@@ -80,6 +80,16 @@ class SchemaValidator {
                 if (!ep.id) errors.push(`epochs[${i}].id is required.`);
                 if (typeof ep.start_tu !== 'number') errors.push(`epochs[${i}].start_tu must be a number.`);
             });
+        }
+        if (config.rulers !== undefined) {
+            if (!Array.isArray(config.rulers)) {
+                errors.push('rulers must be an array.');
+            } else {
+                config.rulers.forEach((r, i) => {
+                    if (!r.label) errors.push(`rulers[${i}].label is required.`);
+                    if (!r.epoch) errors.push(`rulers[${i}].epoch is required.`);
+                });
+            }
         }
 
         if (errors.length > 0) return { valid: false, errors };

@@ -92,8 +92,8 @@ class EventNodeRenderer {
      * @returns {Container}
      */
     _createEventNode(evt) {
-        const startX = temporalEngine.tuToPixel(evt.time_extent.start);
-        const endX = temporalEngine.tuToPixel(evt.time_extent.end);
+        const startX = temporalEngine.tuToPixel(evt.start_tu);
+        const endX = temporalEngine.tuToPixel(evt.end_tu);
         
         // Staggered vertical positioning based on sub_area
         const laneTopY = laneRenderer.getLaneTopY(evt.lane_id);

@@ -75,7 +75,7 @@ class TooltipManager {
 
         // Build multi-system date display
         // Priority: 1. Current Epoch, 2. Baseline (Solar), 3. Other active rulers
-        const currentEpoch = temporalEngine.getEpochAt(evt.time_extent.start);
+        const currentEpoch = temporalEngine.getEpochAt(evt.start_tu);
         const baselineId = 'solar';
         const otherActiveRulers = Array.from(state.activeEpochRulers).filter(id => id !== baselineId && (!currentEpoch || id !== currentEpoch.id));
 
@@ -85,16 +85,16 @@ class TooltipManager {
         systemsToDisplay.push(...otherActiveRulers);
 
         const dateRows = systemsToDisplay.map(systemId => {
-            const startLabel = temporalEngine.formatUnifiedDate(evt.time_extent.start, systemId, true);
-            const endLabel = evt.time_extent.start !== evt.time_extent.end
-                ? ` — ${temporalEngine.formatUnifiedDate(evt.time_extent.end, systemId, true)}`
+            const startLabel = temporalEngine.formatUnifiedDate(evt.start_tu, systemId, true);
+            const endLabel = evt.start_tu !== evt.end_tu
+                ? ` — ${temporalEngine.formatUnifiedDate(evt.end_tu, systemId, true)}`
                 : '';
             
             const isPrimary = currentEpoch && systemId === currentEpoch.id;
             const isBaseline = systemId === baselineId;
             const labelClass = (isPrimary || isBaseline) ? 'tooltip-date-baseline' : 'tooltip-date-era';
             
-            return `<div class="${labelClass}">[${startLabel}${endLabel}]</div>`;
+            return `<div class="${labelClass}">${startLabel}${endLabel}</div>`;
         }).join('');
         
         const approxTag = evt.time_extent.is_approximate ? '<span class="tooltip-approx">≈ Approximate</span>' : '';

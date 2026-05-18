@@ -61,9 +61,10 @@ class RulerRenderer {
         const epochs = temporalEngine.getEpochs();
 
         for (const epoch of epochs) {
-            if (!epoch.ruler || !activeRulers.has(epoch.id)) continue;
+            if (!activeRulers.has(epoch.id)) continue;
 
-            const row = this._createRulerRow(epoch.ruler.label || epoch.label, epoch.id);
+            const label = epoch.label || epoch.name || epoch.id;
+            const row = this._createRulerRow(label, epoch.id);
             row.dataset.epochId = epoch.id;
             row.classList.add('ruler-row--epoch');
             this._container.appendChild(row);

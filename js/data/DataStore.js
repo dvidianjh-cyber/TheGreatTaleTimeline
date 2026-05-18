@@ -8,6 +8,7 @@
 
 import bus, { Events } from '../core/EventBus.js';
 import state from '../core/StateManager.js';
+import temporalEngine from '../core/TemporalEngine.js';
 
 class DataStore {
     constructor() {
@@ -58,12 +59,50 @@ class DataStore {
         this.entities = dataset.entities || [];
         this.lanes = dataset.lanes || [];
 
+        // Load config into TemporalEngine first
+        if (this.worldConfig) {
+            temporalEngine.loadConfig(this.worldConfig);
+        }
+
+        // Pre-compute start_tu and end_tu for all events using temporalEngine
+        this.events.forEach(evt => {
+            const dateUnit = evt.time_extent.date_unit || 'TU';
+            evt.start_tu = temporalEngine.relativeToAbsoluteTU(evt.time_extent.start, dateUnit);
+            evt.end_tu = temporalEngine.relativeToAbsoluteTU(evt.time_extent.end, dateUnit);
+        });
+
+        // Pre-compute absolute lifespan values (start_tu, death_tu, departure_tu) for all entities
+        this.entities.forEach(ent => {
+            if (ent.lifespan) {
+                const dateUnit = ent.lifespan.date_unit || 'TU';
+                if (ent.lifespan.birth !== undefined) {
+                    ent.lifespan.start_tu = temporalEngine.relativeToAbsoluteTU(ent.lifespan.birth, dateUnit);
+                }
+                if (ent.lifespan.death !== undefined) {
+                    ent.lifespan.death_tu = temporalEngine.relativeToAbsoluteTU(ent.lifespan.death, dateUnit);
+                }
+                if (ent.lifespan.departure !== undefined) {
+                    ent.lifespan.departure_tu = temporalEngine.relativeToAbsoluteTU(ent.lifespan.departure, dateUnit);
+                }
+            }
+        });
+
         this._buildIndices();
 
         // Initialize state visibility to show everything
         state.setAllLanesVisible(this.lanes.map(l => l.id));
         state.setAllEntitiesVisible(this.entities.map(e => e.id));
         state.setWorldConfig(this.worldConfig);
+
+        // Auto-enable all time systems and epoch rulers
+        if (this.worldConfig) {
+            if (Array.isArray(this.worldConfig.time_systems)) {
+                state.setActiveTimeSystems(this.worldConfig.time_systems.map(s => s.id));
+            }
+            if (Array.isArray(this.worldConfig.epochs)) {
+                state.setActiveEpochRulers(this.worldConfig.epochs.map(e => e.id));
+            }
+        }
 
         bus.emit(Events.DATA_LOADED, {
             eventCount: this.events.length,
@@ -91,7 +130,7 @@ class DataStore {
 
         // Events sorted by start time
         this._eventsByStart = [...this.events].sort(
-            (a, b) => a.time_extent.start - b.time_extent.start
+            (a, b) => a.start_tu - b.start_tu
         );
 
         // Events grouped by lane
@@ -120,7 +159,7 @@ class DataStore {
 
         // Sort entity event lists chronologically
         for (const [, evtList] of this._eventsByEntity) {
-            evtList.sort((a, b) => a.time_extent.start - b.time_extent.start);
+            evtList.sort((a, b) => a.start_tu - b.start_tu);
         }
 
         // Sub-area indexing
@@ -154,7 +193,7 @@ class DataStore {
         let lo = 0, hi = this._eventsByStart.length - 1;
         while (lo <= hi) {
             const mid = (lo + hi) >>> 1;
-            if (this._eventsByStart[mid].time_extent.end < startTu) {
+            if (this._eventsByStart[mid].end_tu < startTu) {
                 lo = mid + 1;
             } else {
                 hi = mid - 1;
@@ -163,7 +202,7 @@ class DataStore {
         // Scan forward from lo
         for (let i = lo; i < this._eventsByStart.length; i++) {
             const evt = this._eventsByStart[i];
-            if (evt.time_extent.start > endTu) break;
+            if (evt.start_tu > endTu) break;
             result.push(evt);
         }
         return result;
@@ -248,6 +287,29 @@ class DataStore {
     getSubAreaCount(laneId) {
         const laneSubAreas = this._subAreaIndicesByLane.get(laneId);
         return laneSubAreas ? laneSubAreas.size : 1;
+    }
+
+    /**
+     * Get the minimum and maximum Time Units (TUs) across all events and epochs.
+     * @returns {{ minTu: number, maxTu: number }}
+     */
+    getTimeExtents() {
+        let minTu = 0;
+        let maxTu = 50000;
+
+        if (this.worldConfig && this.worldConfig.epochs && this.worldConfig.epochs.length > 0) {
+            minTu = Math.min(...this.worldConfig.epochs.map(e => e.start_tu));
+            maxTu = Math.max(...this.worldConfig.epochs.map(e => e.end_tu || (e.start_tu + 10000)));
+        }
+
+        if (this.events.length > 0) {
+            const eventMin = Math.min(...this.events.map(e => e.start_tu));
+            const eventMax = Math.max(...this.events.map(e => e.end_tu));
+            minTu = Math.min(minTu, eventMin);
+            maxTu = Math.max(maxTu, eventMax);
+        }
+
+        return { minTu, maxTu };
     }
 
     getLane(id) {

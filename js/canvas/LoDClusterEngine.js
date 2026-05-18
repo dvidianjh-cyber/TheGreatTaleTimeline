@@ -106,7 +106,7 @@ class LoDClusterEngine {
         group.on('pointertap', () => {
             // Zoom in to expand the cluster
             const avgTU = cluster.events.reduce((sum, e) =>
-                sum + e.time_extent.start, 0) / cluster.count;
+                sum + e.start_tu, 0) / cluster.count;
             // Emit a zoom request centered on this cluster
             bus.emit(Events.ZOOM_CHANGED, {
                 zoom: state.zoom * 3,

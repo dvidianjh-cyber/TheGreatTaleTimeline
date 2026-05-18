@@ -25,6 +25,7 @@ import panelController from './ui/PanelController.js';
 import flyoutPanel from './ui/FlyoutPanel.js';
 import tooltipManager from './ui/TooltipManager.js';
 import importExportUI from './ui/ImportExportUI.js';
+import dataEditorModal from './ui/DataEditorModal.js';
 
 import persistenceService from './persistence/PersistenceService.js';
 
