@@ -15,7 +15,7 @@
 
 const SAMPLE_DATASET = {
     world_config: {
-        world_name: "Arda",
+        world_name: "Tolkein's Arda",
         time_systems: [
             { id: "solar", name: "Solar Year", abbreviation: "SY", isPrimary: true },
             { id: "valian", name: "Valian Year", abbreviation: "VY", conversion_factor: 9.582 }

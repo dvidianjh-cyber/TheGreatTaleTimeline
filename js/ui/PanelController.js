@@ -50,8 +50,10 @@ class PanelController {
                     <span class="toolbar-btn-label">Biographical</span>
                 </button>
                 <div class="toolbar-divider"></div>
-                <div class="toolbar-control-group" style="display: none;">
-                    <!-- Zoom controls moved to floating controls over canvas -->
+                <div class="toolbar-control-group">
+                    <button class="toolbar-btn" id="btn-measure" title="Time Measure Tool (M)">
+                        <i data-lucide="ruler"></i>
+                    </button>
                 </div>
                 <div class="toolbar-divider"></div>
                 <button class="toolbar-btn" id="btn-fit" title="Fit to View (F)">
@@ -89,6 +91,22 @@ class PanelController {
 
         btnGeo.addEventListener('click', () => setMode('geographic'));
         btnBio.addEventListener('click', () => setMode('biographical'));
+
+        // Measure Tool toggle
+        const btnMeasure = this._toolbar.querySelector('#btn-measure');
+        if (btnMeasure) {
+            btnMeasure.addEventListener('click', () => {
+                const isActive = btnMeasure.classList.toggle('toolbar-btn--active');
+                bus.emit(Events.MEASURE_TOGGLED, { active: isActive });
+            });
+            
+            // Listen for deactivation from outside
+            bus.on(Events.MEASURE_TOGGLED, ({ active }) => {
+                if (!active) {
+                    btnMeasure.classList.remove('toolbar-btn--active');
+                }
+            });
+        }
 
         // Zoom controls (floating)
         const sliderX = document.getElementById('slider-zoom-x');
@@ -206,6 +224,10 @@ class PanelController {
                 state.setZoomX(1);
                 state.setZoomY(1);
                 state.setPan(0, 0);
+                break;
+            case 'm':
+                const btnMeasure = this._toolbar.querySelector('#btn-measure');
+                if (btnMeasure) btnMeasure.click();
                 break;
             case '+':
             case '=':

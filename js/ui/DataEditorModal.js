@@ -22,6 +22,8 @@ export class DataEditorModal {
         // Currently selected item index in the active domain
         this.selectedIndex = null;
 
+        this.sortState = { domain: null, column: null, direction: 1 };
+
         document.body.appendChild(this.container);
 
         this.initDOM();
@@ -55,7 +57,10 @@ export class DataEditorModal {
                             <button class="edit-tab-btn" data-domain="rulers">Rulers</button>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="edit-sample-dropdown" class="edit-form-control" style="width: 150px; display: none;">
+                            <option value="">Load Sample...</option>
+                        </select>
                         <button class="toolbar-btn" id="edit-btn-import" title="Import Data">
                             <i data-lucide="upload"></i> Import
                         </button>
@@ -119,14 +124,28 @@ export class DataEditorModal {
         });
 
         // Delegate grid row clicks
-        const gridContainer = this.container.querySelector('#edit-grid-container');
-        gridContainer.addEventListener('click', (e) => {
+        // List item selection or sort header click
+        this.container.querySelector('#edit-grid-container').addEventListener('click', (e) => {
+            if (e.target.tagName === 'TH' || e.target.closest('th')) {
+                const th = e.target.tagName === 'TH' ? e.target : e.target.closest('th');
+                const colName = th.dataset.col;
+                if (!colName) return;
+
+                if (this.sortState.column === colName && this.sortState.domain === this.activeDomain) {
+                    this.sortState.direction *= -1;
+                } else {
+                    this.sortState = { domain: this.activeDomain, column: colName, direction: 1 };
+                }
+                this.renderGrid();
+                return;
+            }
+
             const tr = e.target.closest('tr');
-            if (tr && tr.dataset.index !== undefined) {
-                this.saveCurrentForm();
-                this.selectedIndex = parseInt(tr.dataset.index, 10);
-                this.renderGrid(); // update selection highlight
-                this.renderForm();
+            if (!tr || !tr.parentElement || tr.parentElement.tagName !== 'TBODY') return;
+
+            const index = parseInt(tr.dataset.index, 10);
+            if (!isNaN(index)) {
+                this.selectItem(index);
             }
         });
 
@@ -135,9 +154,66 @@ export class DataEditorModal {
             bus.emit(Events.PANEL_TOGGLED, { panel: 'import', open: true });
             this.close();
         });
+        // Export
         this.container.querySelector('#edit-btn-export').addEventListener('click', () => {
-            bus.emit(Events.DATA_EXPORTED);
+            bus.emit(Events.EXPORT_REQUESTED);
         });
+
+        // Load Sample Data logic
+        const sampleDropdown = this.container.querySelector('#edit-sample-dropdown');
+        if (sampleDropdown) {
+            // Fetch manifest on init
+            fetch('data/index.json')
+                .then(res => res.json())
+                .then(manifest => {
+                    if (manifest && manifest.length > 0) {
+                        sampleDropdown.style.display = 'inline-block';
+                        manifest.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.file;
+                            option.textContent = item.world_name;
+                            sampleDropdown.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.warn('No sample data manifest found.', err));
+
+            sampleDropdown.addEventListener('change', async (e) => {
+                const file = e.target.value;
+                if (!file) return;
+                
+                if (confirm('Load this sample data? This will overwrite your current unsaved changes in the editor.')) {
+                    try {
+                        const res = await fetch(file);
+                        const data = await res.json();
+                        
+                        this.editData = {
+                            world_config: data.world_config || { world_name: 'Unknown World' },
+                            lanes: data.lanes || [],
+                            entities: data.entities || [],
+                            events: data.events || [],
+                            time_epochs: data.world_config?.epochs || [],
+                            rulers: data.world_config?.rulers || []
+                        };
+                        
+                        const worldNameInput = this.container.querySelector('#edit-world-name');
+                        if (worldNameInput) worldNameInput.value = this.editData.world_config.world_name || '';
+                        
+                        this.selectedIndex = null;
+                        this.sortState = { domain: this.activeDomain, column: null, direction: 1 };
+                        this.renderGrid();
+                        this.renderForm();
+                        
+                    } catch (err) {
+                        console.error('Failed to load sample data', err);
+                        alert('Failed to load sample data. See console for details.');
+                    }
+                }
+                
+                // reset dropdown
+                sampleDropdown.value = '';
+            });
+        }
         
         // World Name binding
         const worldNameInput = this.container.querySelector('#edit-world-name');
@@ -356,29 +432,80 @@ export class DataEditorModal {
             return;
         }
 
-        let html = '<table class="edit-table"><thead><tr>';
+        let html = '<table class="edit-table"><thead>';
         
-        // Define columns based on domain
-        let cols = [];
-        if (this.activeDomain === 'lanes') {
-            cols = ['Color', 'Label', 'Order'];
-            html += '<th>Color</th><th>Label</th><th>Order</th>';
-        } else if (this.activeDomain === 'entities') {
-            cols = ['Color', 'Name', 'Race'];
-            html += '<th>Color</th><th>Name</th><th>Race</th>';
-        } else if (this.activeDomain === 'events') {
-            cols = ['Type', 'Title', 'Lane'];
-            html += '<th>Type</th><th>Title</th><th>Lane</th>';
-        } else if (this.activeDomain === 'time_epochs') {
-            cols = ['ID', 'Title', 'Abbreviation'];
-            html += '<th>ID</th><th>Title</th><th>Abbrev</th>';
-        } else if (this.activeDomain === 'rulers') {
-            cols = ['Label', 'Epoch', 'Visible'];
-            html += '<th>Label</th><th>Epoch</th><th>Visible</th>';
-        }
-        html += '</tr></thead><tbody>';
+        const buildHeader = (cols) => {
+            let tr = '<tr>';
+            cols.forEach(c => {
+                let indicator = '';
+                if (this.sortState.domain === this.activeDomain && this.sortState.column === c) {
+                    indicator = this.sortState.direction === 1 ? ' ▲' : ' ▼';
+                }
+                tr += `<th data-col="${c}" style="cursor:pointer; user-select:none;">${c}${indicator}</th>`;
+            });
+            tr += '</tr>';
+            return tr;
+        };
 
-        list.forEach((item, index) => {
+        // Define columns based on domain
+        if (this.activeDomain === 'lanes') {
+            html += buildHeader(['Color', 'Label', 'Order']);
+        } else if (this.activeDomain === 'entities') {
+            html += buildHeader(['Color', 'Name', 'Race']);
+        } else if (this.activeDomain === 'events') {
+            html += buildHeader(['Type', 'Title', 'Lane']);
+        } else if (this.activeDomain === 'time_epochs') {
+            html += buildHeader(['ID', 'Title', 'Abbrev']);
+        } else if (this.activeDomain === 'rulers') {
+            html += buildHeader(['Label', 'Epoch', 'Visible']);
+        }
+        html += '</thead><tbody>';
+
+        let sortedIndices = list.map((_, i) => i);
+        if (this.sortState.domain === this.activeDomain && this.sortState.column) {
+            sortedIndices.sort((a, b) => {
+                const itemA = list[a];
+                const itemB = list[b];
+                
+                let valA = '', valB = '';
+                
+                if (this.activeDomain === 'lanes') {
+                    if (this.sortState.column === 'Color') { valA = itemA.color_hint || ''; valB = itemB.color_hint || ''; }
+                    else if (this.sortState.column === 'Label') { valA = itemA.label || ''; valB = itemB.label || ''; }
+                    else if (this.sortState.column === 'Order') { valA = itemA.order || 0; valB = itemB.order || 0; }
+                } else if (this.activeDomain === 'entities') {
+                    if (this.sortState.column === 'Color') { valA = itemA.metadata?.color || ''; valB = itemB.metadata?.color || ''; }
+                    else if (this.sortState.column === 'Name') { valA = itemA.name || ''; valB = itemB.name || ''; }
+                    else if (this.sortState.column === 'Race') { valA = itemA.metadata?.race || ''; valB = itemB.metadata?.race || ''; }
+                } else if (this.activeDomain === 'events') {
+                    if (this.sortState.column === 'Type') { valA = itemA.type || ''; valB = itemB.type || ''; }
+                    else if (this.sortState.column === 'Title') { valA = itemA.title || ''; valB = itemB.title || ''; }
+                    else if (this.sortState.column === 'Lane') { 
+                        const laneA = this.editData.lanes.find(l => l.id === itemA.lane_id);
+                        valA = laneA ? (laneA.label || laneA.name || laneA.id) : (itemA.lane_id || '');
+                        const laneB = this.editData.lanes.find(l => l.id === itemB.lane_id);
+                        valB = laneB ? (laneB.label || laneB.name || laneB.id) : (itemB.lane_id || '');
+                    }
+                } else if (this.activeDomain === 'time_epochs') {
+                    if (this.sortState.column === 'ID') { valA = itemA.id || ''; valB = itemB.id || ''; }
+                    else if (this.sortState.column === 'Title') { valA = itemA.label || itemA.name || ''; valB = itemB.label || itemB.name || ''; }
+                    else if (this.sortState.column === 'Abbrev') { valA = itemA.abbreviation || ''; valB = itemB.abbreviation || ''; }
+                } else if (this.activeDomain === 'rulers') {
+                    if (this.sortState.column === 'Label') { valA = itemA.label || ''; valB = itemB.label || ''; }
+                    else if (this.sortState.column === 'Epoch') { valA = itemA.epoch || ''; valB = itemB.epoch || ''; }
+                    else if (this.sortState.column === 'Visible') { valA = itemA.visible !== false ? 1 : 0; valB = itemB.visible !== false ? 1 : 0; }
+                }
+                
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return valA.localeCompare(valB) * this.sortState.direction;
+                } else {
+                    return (valA > valB ? 1 : (valA < valB ? -1 : 0)) * this.sortState.direction;
+                }
+            });
+        }
+
+        sortedIndices.forEach((index) => {
+            const item = list[index];
             const isSelected = index === this.selectedIndex ? 'class="selected"' : '';
             html += `<tr data-index="${index}" ${isSelected}>`;
             

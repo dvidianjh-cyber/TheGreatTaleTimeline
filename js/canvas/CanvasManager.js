@@ -11,6 +11,7 @@ import gsap from 'https://cdn.jsdelivr.net/npm/gsap@3.15.0/+esm';
 import bus, { Events } from '../core/EventBus.js';
 import state from '../core/StateManager.js';
 import temporalEngine from '../core/TemporalEngine.js';
+import measureTool from './MeasureTool.js';
 
 /**
  * @class CanvasManager
@@ -43,6 +44,9 @@ class CanvasManager {
         this._panStartY = 0;
         this._panStartOffsetX = 0;
         this._panStartOffsetY = 0;
+
+        // ── Measure state ──
+        this._isMeasuring = false;
 
         // ── Dirty flag ──
         this._dirty = true;
@@ -102,6 +106,20 @@ class CanvasManager {
 
         // Listen for dirty flag
         bus.on(Events.RENDER_DIRTY, this._markDirty);
+
+        // Listen for measure tool toggle
+        bus.on(Events.MEASURE_TOGGLED, ({ active }) => {
+            this._isMeasuring = active;
+            if (active) {
+                this.app.renderer.events.cursorStyles.default = 'crosshair';
+            } else {
+                this.app.renderer.events.cursorStyles.default = 'grab';
+                measureTool.clear();
+            }
+        });
+
+        // Initialize measure tool
+        measureTool.init(this.uiOverlayLayer);
 
         // Start render loop
         this.app.ticker.add(this._renderLoop, this);
@@ -231,6 +249,12 @@ class CanvasManager {
      */
     _onPointerDown(e) {
         if (e.button !== 0) return; // Left click only
+        
+        if (this._isMeasuring) {
+            measureTool.onPointerDown(e, this);
+            return;
+        }
+
         this._isPanning = true;
         this._panStartX = e.clientX;
         this._panStartY = e.clientY;
@@ -244,6 +268,11 @@ class CanvasManager {
      * @param {PointerEvent} e
      */
     _onPointerMove(e) {
+        if (this._isMeasuring && measureTool.isDragging) {
+            measureTool.onPointerMove(e, this);
+            return;
+        }
+        
         if (!this._isPanning) return;
         const dx = e.clientX - this._panStartX;
         const dy = e.clientY - this._panStartY;
@@ -256,7 +285,12 @@ class CanvasManager {
     /**
      * @private
      */
-    _onPointerUp() {
+    _onPointerUp(e) {
+        if (this._isMeasuring && measureTool.isDragging) {
+            measureTool.onPointerUp(e, this);
+            return;
+        }
+
         if (this._isPanning) {
             this._isPanning = false;
             if (this.app) {

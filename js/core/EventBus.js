@@ -12,6 +12,7 @@ export const Events = Object.freeze({
     ZOOM_CHANGED: 'zoom:changed',
     PAN_CHANGED: 'pan:changed',
     VIEWPORT_RESIZED: 'viewport:resized',
+    MEASURE_TOGGLED: 'measure:toggled',
 
     // Data lifecycle
     DATA_LOADED: 'data:loaded',

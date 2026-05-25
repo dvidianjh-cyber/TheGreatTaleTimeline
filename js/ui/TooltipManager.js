@@ -98,6 +98,30 @@ class TooltipManager {
         
         const approxTag = evt.time_extent.is_approximate ? '<span class="tooltip-approx">≈ Approximate</span>' : '';
 
+        // Locations
+        let locationHTML = '';
+        if (evt.lane_id) {
+            const lane = dataStore.lanes.find(l => l.id === evt.lane_id);
+            const laneLabel = lane ? (lane.label || lane.name || lane.id) : evt.lane_id;
+            const laneColor = lane && lane.color_hint ? lane.color_hint : 'var(--border-medium)';
+            
+            const subArea = evt.sub_area || (evt.metadata && evt.metadata.sub_area);
+            let subAreaHTML = '';
+            if (subArea) {
+                subAreaHTML = `<span class="tooltip-chip" style="background: rgba(255,255,255,0.05); border-color: ${laneColor}">${this._sanitize(subArea)}</span>`;
+            }
+            
+            locationHTML = `
+                <div class="tooltip-locations" style="margin-top: 8px;">
+                    <div class="tooltip-section-label" style="margin-bottom: 4px;">Location</div>
+                    <div class="tooltip-location-pills" style="display:flex; flex-direction:row; flex-wrap:wrap; gap:4px;">
+                        <span class="tooltip-chip" style="border-left: 3px solid ${laneColor}">${this._sanitize(laneLabel)}</span>
+                        ${subAreaHTML}
+                    </div>
+                </div>
+            `;
+        }
+
         // Participants
         let participantHTML = '';
         if (evt.participants && evt.participants.length > 0) {
@@ -129,6 +153,7 @@ class TooltipManager {
                 <div class="tooltip-col-left">
                     <h3 class="tooltip-title">${this._sanitize(evt.title || 'Unknown Event')}</h3>
                     ${evt.description ? `<p class="tooltip-description">${this._sanitize(evt.description)}</p>` : ''}
+                    ${locationHTML}
                     ${participantHTML}
                 </div>
                 <div class="tooltip-col-right">

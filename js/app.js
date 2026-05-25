@@ -33,7 +33,7 @@ import persistenceService from './persistence/PersistenceService.js';
  * DEV_MODE: When true, auto-loads sample data on startup.
  * Set to false for production (app loads blank, user imports data).
  */
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 /**
  * Main application bootstrap.
