@@ -145,7 +145,10 @@ export class DataEditorModal {
 
             const index = parseInt(tr.dataset.index, 10);
             if (!isNaN(index)) {
-                this.selectItem(index);
+                this.saveCurrentForm();
+                this.selectedIndex = index;
+                this.renderGrid(); // update selection highlight
+                this.renderForm();
             }
         });
 
