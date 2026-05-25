@@ -1363,3 +1363,157 @@ h4 {
 .edit-actions {
     margin-bottom: var(--spacing-sm);
 }
+
+/* ═══════════════════════════════════════════════
+   Floating Viewport Controls
+   ═══════════════════════════════════════════════ */
+
+.floating-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.floating-slider {
+    position: absolute;
+    pointer-events: auto;
+    -webkit-appearance: none;
+    background: var(--border-medium);
+    border-radius: 2px;
+    outline: none;
+}
+
+.floating-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.horizontal-slider {
+    top: 10px;
+    left: 20px;
+    width: 250px;
+    height: 4px;
+}
+
+.vertical-slider {
+    top: 30px;
+    left: 6px;
+    width: 150px;
+    height: 4px;
+    transform: rotate(90deg);
+    transform-origin: left top;
+}
+
+/* ═══════════════════════════════════════════════
+   Split-Pane Modal
+   ═══════════════════════════════════════════════ */
+
+.edit-main {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+}
+
+.edit-grid-container {
+    flex: 0 0 40%;
+    border-right: 1px solid var(--border-medium);
+    overflow-y: auto;
+}
+
+.edit-form-container {
+    flex: 0 0 60%;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+}
+
+.edit-form-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.edit-form-group label {
+    flex: 0 0 30%;
+    text-align: right;
+    font-size: calc(12px * var(--base-font-size));
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.edit-form-control {
+    flex: 1;
+}
+
+.color-picker-palette {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.color-picker-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--border-medium);
+}
+.color-picker-swatch.selected {
+    border: 2px solid var(--accent-gold);
+}
+
+/* ═══════════════════════════════════════════════
+   Tooltip 2-Column Grid
+   ═══════════════════════════════════════════════ */
+
+.tooltip-grid {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.tooltip-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.tooltip-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    border-left: 1px solid var(--border-subtle);
+    padding-left: var(--spacing-sm);
+}
+
+.tooltip-date-baseline {
+    font-weight: 700;
+    color: var(--text-accent);
+}
+
+.tooltip-date-era {
+    font-weight: 700;
+    color: var(--text-accent);
+}
+
+.tooltip-participant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.flyout-race-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

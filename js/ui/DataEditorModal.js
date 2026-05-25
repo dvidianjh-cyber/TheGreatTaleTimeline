@@ -43,28 +43,40 @@ export class DataEditorModal {
         this.container.innerHTML = `
             <div class="import-modal-backdrop" id="edit-modal-backdrop"></div>
             <div class="edit-modal-content">
-                <div class="edit-modal-header">
-                    <h2>Edit World Data</h2>
-                    <button class="import-modal-close" id="edit-btn-close">
-                        <i data-lucide="x"></i>
-                    </button>
+                <div class="edit-modal-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <h2>Edit World Data</h2>
+                        <input type="text" id="edit-world-name" class="edit-form-control" placeholder="World Name" style="width: 200px;" />
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="toolbar-btn" id="edit-btn-import" title="Import Data">
+                            <i data-lucide="upload"></i> Import
+                        </button>
+                        <button class="toolbar-btn" id="edit-btn-export" title="Export Data">
+                            <i data-lucide="download"></i> Export
+                        </button>
+                        <button class="import-modal-close" id="edit-btn-close">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="edit-modal-body">
                     <div class="edit-sidebar">
                         <button class="edit-tab-btn edit-tab-btn--active" data-domain="lanes">Lanes</button>
                         <button class="edit-tab-btn" data-domain="entities">Entities</button>
                         <button class="edit-tab-btn" data-domain="events">Events</button>
+                        <button class="edit-tab-btn" data-domain="time_epochs">Time/Epochs</button>
                     </div>
                     <div class="edit-main">
                         <div class="edit-grid-container" id="edit-grid-container">
                             <!-- Table will be injected here -->
                         </div>
-                        <div class="edit-actions" style="padding: 0 16px;">
-                            <button class="btn-secondary" id="edit-btn-add">Add New Record</button>
-                        </div>
                         <div class="edit-form-container" id="edit-form-container">
+                            <div class="edit-actions" style="margin-bottom: 16px;">
+                                <button class="btn-secondary" id="edit-btn-add">Add New Record</button>
+                            </div>
                             <!-- Form will be injected here -->
-                            <div style="text-align: center; color: var(--text-muted); margin-top: 40px;">Select a record to edit</div>
+                            <div style="text-align: center; color: var(--text-muted); margin-top: 40px;" id="edit-form-placeholder">Select a record to edit</div>
                         </div>
                     </div>
                 </div>
@@ -105,24 +117,47 @@ export class DataEditorModal {
             });
         });
 
-        // Delegate grid row clicks
-        const gridContainer = this.container.querySelector('#edit-grid-container');
-        gridContainer.addEventListener('click', (e) => {
-            const tr = e.target.closest('tr');
-            if (tr && tr.dataset.index !== undefined) {
-                this.saveCurrentForm();
-                this.selectedIndex = parseInt(tr.dataset.index, 10);
-                this.renderGrid(); // update selection highlight
-                this.renderForm();
+        // Import / Export
+        this.container.querySelector('#edit-btn-import').addEventListener('click', () => {
+            bus.emit(Events.PANEL_TOGGLED, { panel: 'import', open: true });
+            this.close();
+        });
+        this.container.querySelector('#edit-btn-export').addEventListener('click', () => {
+            bus.emit(Events.DATA_EXPORTED);
+        });
+        
+        // World Name binding
+        const worldNameInput = this.container.querySelector('#edit-world-name');
+        worldNameInput.addEventListener('change', (e) => {
+            if (this.editData.world_config) {
+                this.editData.world_config.world_name = e.target.value;
             }
         });
 
         // Delegate form changes to auto-update grid if needed
         const formContainer = this.container.querySelector('#edit-form-container');
         formContainer.addEventListener('change', (e) => {
-            if (e.target.name === 'id' || e.target.name === 'name' || e.target.name === 'title') {
+            if (e.target.name === 'id' || e.target.name === 'name' || e.target.name === 'title' || e.target.name === 'label') {
                 this.saveCurrentForm();
                 this.renderGrid(); // update grid text
+            }
+        });
+
+        // Handle color picker clicks
+        formContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('color-picker-swatch')) {
+                const hiddenInputId = e.target.dataset.targetId;
+                const hiddenInput = this.container.querySelector(`#${hiddenInputId}`);
+                if (hiddenInput) {
+                    hiddenInput.value = e.target.dataset.color;
+                    // Update visual selection
+                    const siblings = e.target.parentElement.querySelectorAll('.color-picker-swatch');
+                    siblings.forEach(s => s.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    // Trigger save
+                    this.saveCurrentForm();
+                    this.renderGrid();
+                }
             }
         });
     }
@@ -135,10 +170,15 @@ export class DataEditorModal {
 
         // Deep copy the current data for editing
         this.editData = {
+            world_config: JSON.parse(JSON.stringify(state.worldConfig || { world_name: 'Unknown World' })),
             lanes: JSON.parse(JSON.stringify(dataStore.lanes || [])),
             entities: JSON.parse(JSON.stringify(dataStore.entities || [])),
-            events: JSON.parse(JSON.stringify(dataStore.events || []))
+            events: JSON.parse(JSON.stringify(dataStore.events || [])),
+            time_epochs: JSON.parse(JSON.stringify(dataStore.dataset?.epochs || []))
         };
+
+        const worldNameInput = this.container.querySelector('#edit-world-name');
+        if (worldNameInput) worldNameInput.value = this.editData.world_config.world_name || '';
 
         this.selectedIndex = null;
         this.renderGrid();
@@ -164,7 +204,8 @@ export class DataEditorModal {
             
             // Reconstruct the full dataset format expected by DataStore
             const newDataset = {
-                world_config: state.worldConfig,
+                world_config: this.editData.world_config,
+                epochs: this.editData.time_epochs,
                 lanes: this.editData.lanes,
                 entities: this.editData.entities,
                 events: this.editData.events
@@ -207,6 +248,15 @@ export class DataEditorModal {
                     participants: [],
                     description: '',
                     importance: 5
+                };
+                break;
+            case 'time_epochs':
+                newItem = {
+                    id: `epoch_${Date.now()}`,
+                    name: 'New Epoch',
+                    abbreviation: 'NE',
+                    start_tu: 0,
+                    end_tu: 100
                 };
                 break;
         }
@@ -301,6 +351,9 @@ export class DataEditorModal {
         } else if (this.activeDomain === 'events') {
             cols = ['ID', 'Title', 'Timeframe'];
             html += '<th>ID</th><th>Title</th><th>Timeframe</th>';
+        } else if (this.activeDomain === 'time_epochs') {
+            cols = ['ID', 'Name', 'Abbreviation'];
+            html += '<th>ID</th><th>Name</th><th>Abbrev</th>';
         }
         html += '</tr></thead><tbody>';
 
@@ -318,6 +371,8 @@ export class DataEditorModal {
                 const endLabel = item.time_extent && item.time_extent.end !== item.time_extent.start ? ` to ${item.time_extent.end} ${item.time_extent.date_unit || 'YL'}` : '';
                 const timeStr = `${startLabel}${endLabel}`;
                 html += `<td>${item.id || ''}</td><td>${item.title || ''}</td><td>${timeStr}</td>`;
+            } else if (this.activeDomain === 'time_epochs') {
+                html += `<td>${item.id || ''}</td><td>${item.name || ''}</td><td>${item.abbreviation || ''}</td>`;
             }
             
             html += '</tr>';
@@ -330,8 +385,14 @@ export class DataEditorModal {
     renderForm() {
         const container = this.container.querySelector('#edit-form-container');
 
+        // Remove placeholder and old form if exists
+        const oldForm = container.querySelector('#edit-form');
+        const placeholder = container.querySelector('#edit-form-placeholder');
+        if (oldForm) oldForm.remove();
+        if (placeholder) placeholder.style.display = 'none';
+
         if (this.selectedIndex === null) {
-            container.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin-top: 40px;">Select a record to edit</div>';
+            if (placeholder) placeholder.style.display = 'block';
             return;
         }
 
@@ -342,7 +403,7 @@ export class DataEditorModal {
             html += this.buildField('text', 'id', 'Lane ID', item.id, true);
             html += this.buildField('text', 'label', 'Lane Label', item.label);
             html += this.buildField('number', 'order', 'Sort Order', item.order);
-            html += this.buildField('text', 'color_hint', 'Color Hint (e.g. #f4eedb)', item.color_hint);
+            html += this.buildField('color', 'color_hint', 'Color Hint', item.color_hint);
         } else if (this.activeDomain === 'entities') {
             html += this.buildField('text', 'id', 'Entity ID', item.id, true);
             html += this.buildField('text', 'name', 'Entity Name', item.name);
@@ -354,7 +415,7 @@ export class DataEditorModal {
             const color = item.metadata ? item.metadata.color : '';
             html += this.buildField('text', 'metadata.race', 'Race (e.g. Elf, Man)', race);
             html += this.buildField('text', 'metadata.subrace', 'Subrace / Faction', subrace);
-            html += this.buildField('text', 'metadata.color', 'Color Code (e.g. #ffd700)', color);
+            html += this.buildField('color', 'metadata.color', 'Color Code', color);
             
             // Lifespan fields
             html += '<h4 style="margin: 16px 0 8px 0; color: var(--text-accent);">Lifespan</h4>';
@@ -421,10 +482,17 @@ export class DataEditorModal {
             html += '</div></div>';
 
             html += this.buildField('textarea', 'description', 'Description', item.description);
+        } else if (this.activeDomain === 'time_epochs') {
+            html += this.buildField('text', 'id', 'Epoch ID', item.id, true);
+            html += this.buildField('text', 'name', 'Epoch Name', item.name);
+            html += this.buildField('text', 'abbreviation', 'Abbreviation', item.abbreviation);
+            html += '<h4 style="margin: 16px 0 8px 0; color: var(--text-accent);">Time Range (Absolute TUs)</h4>';
+            html += this.buildField('number', 'start_tu', 'Start TU', item.start_tu || 0);
+            html += this.buildField('number', 'end_tu', 'End TU', item.end_tu || 0);
         }
 
         html += '</form>';
-        container.innerHTML = html;
+        container.insertAdjacentHTML('beforeend', html);
     }
 
     buildField(type, name, label, value, readonly = false) {
@@ -452,6 +520,28 @@ export class DataEditorModal {
                 <div class="edit-form-group" style="flex-direction: row; align-items: center; gap: 8px;">
                     <input type="checkbox" name="${name}" id="input_${name}" ${checkedAttr}>
                     <label for="input_${name}" style="margin:0;">${label}</label>
+                </div>
+            `;
+            inputHtml = `<input type="${type}" name="${name}" class="edit-form-control" value="${valStr}" ${readOnlyAttr}>`;
+        } else if (type === 'color') {
+            const presets = [
+                '#E8E8E8', '#6a7482', '#2a5a8a', '#248888',
+                '#248846', '#ffd700', '#c26330', '#a02030',
+                '#8b2222', '#4a4034', '#73675a', '#b38822',
+                '#cc4444', '#ff6633', '#44cc88', '#66aaff'
+            ];
+            const hiddenId = `color_${name.replace('.', '_')}`;
+            const swatches = presets.map(c => `
+                <div class="color-picker-swatch ${c === valStr ? 'selected' : ''}" 
+                     style="background: ${c};" 
+                     data-color="${c}" 
+                     data-target-id="${hiddenId}"></div>
+            `).join('');
+            
+            inputHtml = `
+                <input type="hidden" name="${name}" id="${hiddenId}" value="${valStr}">
+                <div class="color-picker-palette">
+                    ${swatches}
                 </div>
             `;
         } else {

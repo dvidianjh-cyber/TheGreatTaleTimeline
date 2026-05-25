@@ -50,15 +50,8 @@ class PanelController {
                     <span class="toolbar-btn-label">Biographical</span>
                 </button>
                 <div class="toolbar-divider"></div>
-                <div class="toolbar-control-group">
-                    <div class="toolbar-slider-item">
-                        <i data-lucide="move-horizontal" class="slider-icon"></i>
-                        <input type="range" id="slider-zoom-x" min="-2" max="10" step="0.1" value="0" />
-                    </div>
-                    <div class="toolbar-slider-item">
-                        <i data-lucide="move-vertical" class="slider-icon"></i>
-                        <input type="range" id="slider-zoom-y" min="0.1" max="5" step="0.1" value="1" />
-                    </div>
+                <div class="toolbar-control-group" style="display: none;">
+                    <!-- Zoom controls moved to floating controls over canvas -->
                 </div>
                 <div class="toolbar-divider"></div>
                 <button class="toolbar-btn" id="btn-fit" title="Fit to View (F)">
@@ -103,21 +96,25 @@ class PanelController {
         btnGeo.addEventListener('click', () => setMode('geographic'));
         btnBio.addEventListener('click', () => setMode('biographical'));
 
-        // Zoom controls
-        const sliderX = this._toolbar.querySelector('#slider-zoom-x');
-        const sliderY = this._toolbar.querySelector('#slider-zoom-y');
+        // Zoom controls (floating)
+        const sliderX = document.getElementById('slider-zoom-x');
+        const sliderY = document.getElementById('slider-zoom-y');
 
-        // Linear to Logarithmic mapping for X zoom (since X scale is massive)
+        // Linear to Logarithmic mapping for X zoom
         const tuToVal = (tu) => Math.log10(tu);
         const valToTu = (val) => Math.pow(10, val);
 
-        sliderX.addEventListener('input', (e) => {
-            state.setZoomX(valToTu(parseFloat(e.target.value)));
-        });
+        if (sliderX) {
+            sliderX.addEventListener('input', (e) => {
+                state.setZoomX(valToTu(parseFloat(e.target.value)));
+            });
+        }
 
-        sliderY.addEventListener('input', (e) => {
-            state.setZoomY(parseFloat(e.target.value));
-        });
+        if (sliderY) {
+            sliderY.addEventListener('input', (e) => {
+                state.setZoomY(parseFloat(e.target.value));
+            });
+        }
 
         const fitToData = () => {
             if (!dataStore.hasData) return;
@@ -154,7 +151,14 @@ class PanelController {
 
         // Listen for state changes to sync sliders (e.g. from mouse wheel)
         bus.on(Events.ZOOM_CHANGED, ({ zoomX, zoomY }) => {
-            if (sliderX) sliderX.value = tuToVal(zoomX);
+            if (sliderX) {
+                // Update slider max dynamically based on viewport width
+                const viewportWidth = state.viewportWidth || window.innerWidth;
+                const maxZoom = viewportWidth / 0.05;
+                const maxVal = tuToVal(maxZoom);
+                sliderX.max = maxVal.toFixed(2);
+                sliderX.value = tuToVal(zoomX);
+            }
             if (sliderY) sliderY.value = zoomY;
         });
 

@@ -74,8 +74,10 @@ class FlyoutPanel {
                 </button>
             </div>
 
-            <div class="flyout-search">
-                <input type="text" id="flyout-search-input" placeholder="Search entities..." class="flyout-search-input" />
+            <!-- Era Ruler Toggles -->
+            <div class="flyout-section">
+                <h3 class="flyout-section-title">Era Ruler Rows</h3>
+                <div class="flyout-section-content" id="flyout-era-rulers"></div>
             </div>
 
             <!-- Display Settings Section -->
@@ -83,28 +85,19 @@ class FlyoutPanel {
                 <h3 class="flyout-section-title">Display Settings</h3>
                 <div class="flyout-section-content">
                     <div class="flyout-slider-group">
-                        <div class="flyout-slider-header">
+                        <div class="flyout-slider-header" style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
                             <label for="font-size-slider">Master Font Size</label>
                             <span id="font-size-value">${state.baseFontSize.toFixed(1)}x</span>
                         </div>
                         <input type="range" id="font-size-slider" class="flyout-slider" min="0.5" max="2.0" step="0.1" value="${state.baseFontSize}" />
                     </div>
-                </div>
-            </div>
-
-            <!-- Era Ruler Toggles -->
-            <div class="flyout-section">
-                <h3 class="flyout-section-title">Era Ruler Rows</h3>
-                <div class="flyout-section-content" id="flyout-era-rulers"></div>
-            </div>
-
-            <!-- Importance Threshold -->
-            <div class="flyout-section">
-                <h3 class="flyout-section-title">Importance Threshold</h3>
-                <div class="flyout-section-content">
-                    <div class="flyout-slider-row">
+                    
+                    <div class="flyout-slider-group" style="margin-top: 12px;">
+                        <div class="flyout-slider-header" style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                            <label for="importance-slider">Importance Threshold</label>
+                            <span id="importance-value" class="flyout-slider-value">${state.importanceThreshold}</span>
+                        </div>
                         <input type="range" id="importance-slider" min="1" max="10" value="${state.importanceThreshold}" class="flyout-slider" />
-                        <span id="importance-value" class="flyout-slider-value">${state.importanceThreshold}</span>
                     </div>
                 </div>
             </div>
@@ -126,6 +119,9 @@ class FlyoutPanel {
                     <button class="flyout-select-all" data-target="entities">All</button>
                     <button class="flyout-select-none" data-target="entities">None</button>
                 </h3>
+                <div class="flyout-search" style="padding: 8px 16px;">
+                    <input type="text" id="flyout-search-input" placeholder="Search entities..." class="flyout-search-input" />
+                </div>
                 <div class="flyout-section-content" id="flyout-entities"></div>
             </div>
         `;
@@ -173,13 +169,19 @@ class FlyoutPanel {
             const entities = dataStore.getEntitiesByRace(race);
 
             container.innerHTML += `<div class="flyout-race-group" data-race="${race}">
-                <h4 class="flyout-race-title">${race}</h4>
+                <div class="flyout-race-header">
+                    <h4 class="flyout-race-title">${race}</h4>
+                    <label class="flyout-toggle" style="transform: scale(0.8);">
+                        <input type="checkbox" class="master-race-toggle" data-race-target="${race}" checked />
+                        <span style="display:none;">Toggle</span>
+                    </label>
+                </div>
                 ${entities.map(ent => {
                     const checked = state.visibleEntities.has(ent.id) ? 'checked' : '';
                     const color = ent.metadata?.color || '#888';
                     return `
-                        <label class="flyout-checkbox flyout-entity-item" data-entity-name="${ent.name.toLowerCase()}">
-                            <input type="checkbox" data-entity-id="${ent.id}" ${checked} />
+                        <label class="flyout-checkbox flyout-entity-item" data-entity-name="${ent.name.toLowerCase()}" data-entity-race="${race}">
+                            <input type="checkbox" data-entity-id="${ent.id}" class="entity-checkbox-${race}" ${checked} />
                             <span class="flyout-color-dot" style="background: ${color}"></span>
                             <span>${ent.name}</span>
                         </label>
@@ -297,6 +299,18 @@ class FlyoutPanel {
                     state.setAllEntitiesVisible([]);
                     this._panel.querySelectorAll('[data-entity-id]').forEach(cb => cb.checked = false);
                 }
+            });
+        });
+
+        // Master race toggles
+        this._panel.querySelectorAll('.master-race-toggle').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const race = e.target.dataset.raceTarget;
+                const isChecked = e.target.checked;
+                this._panel.querySelectorAll(`.entity-checkbox-${race}`).forEach(cb => {
+                    cb.checked = isChecked;
+                    state.setEntityVisibility(cb.dataset.entityId, isChecked);
+                });
             });
         });
 

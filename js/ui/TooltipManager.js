@@ -123,17 +123,21 @@ class TooltipManager {
         const importanceStars = '★'.repeat(evt.importance || 5) + '☆'.repeat(10 - (evt.importance || 5));
 
         this._tooltip.innerHTML = `
-            <div class="tooltip-header">
-                <h3 class="tooltip-title">${this._sanitize(evt.title || 'Unknown Event')}</h3>
-                ${typeBadge}
+            <div class="tooltip-grid">
+                <div class="tooltip-col-left">
+                    <h3 class="tooltip-title">${this._sanitize(evt.title || 'Unknown Event')}</h3>
+                    <div class="tooltip-importance">${importanceStars}</div>
+                    ${evt.description ? `<p class="tooltip-description">${this._sanitize(evt.description)}</p>` : ''}
+                </div>
+                <div class="tooltip-col-right">
+                    ${typeBadge}
+                    <div class="tooltip-date-container" style="display:flex; flex-direction:column; gap:2px;">
+                        ${dateRows}
+                        ${approxTag}
+                    </div>
+                    ${participantHTML}
+                </div>
             </div>
-            <div class="tooltip-date-container">
-                ${dateRows}
-                ${approxTag}
-            </div>
-            <div class="tooltip-importance">${importanceStars}</div>
-            ${evt.description ? `<p class="tooltip-description">${this._sanitize(evt.description)}</p>` : ''}
-            ${participantHTML}
         `;
 
         // Position tooltip

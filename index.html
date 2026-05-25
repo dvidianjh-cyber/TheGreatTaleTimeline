@@ -26,7 +26,12 @@
         <div id="ruler-strip"></div>
 
         <!-- PixiJS Canvas Container -->
-        <div id="canvas-container"></div>
+        <div id="canvas-container">
+            <div id="floating-viewport-controls" class="floating-controls">
+                <input type="range" id="slider-zoom-y" class="floating-slider vertical-slider" min="0.1" max="5" step="0.1" value="1" orient="vertical" title="Vertical Zoom" />
+                <input type="range" id="slider-zoom-x" class="floating-slider horizontal-slider" min="-2" max="10" step="0.1" value="0" title="Horizontal Zoom" />
+            </div>
+        </div>
 
         <!-- Flyout Filter Panel (right side) -->
         <div id="flyout-panel"></div>
