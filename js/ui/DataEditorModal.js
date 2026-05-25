@@ -47,6 +47,12 @@ export class DataEditorModal {
                     <div style="display: flex; align-items: center; gap: 16px;">
                         <h2>Edit World Data</h2>
                         <input type="text" id="edit-world-name" class="edit-form-control" placeholder="World Name" style="width: 200px;" />
+                        <div class="edit-tabs-header" style="display: flex; gap: 8px;">
+                            <button class="edit-tab-btn edit-tab-btn--active" data-domain="lanes">Lanes</button>
+                            <button class="edit-tab-btn" data-domain="entities">Entities</button>
+                            <button class="edit-tab-btn" data-domain="events">Events</button>
+                            <button class="edit-tab-btn" data-domain="time_epochs">Time/Epochs</button>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <button class="toolbar-btn" id="edit-btn-import" title="Import Data">
@@ -61,12 +67,6 @@ export class DataEditorModal {
                     </div>
                 </div>
                 <div class="edit-modal-body">
-                    <div class="edit-sidebar">
-                        <button class="edit-tab-btn edit-tab-btn--active" data-domain="lanes">Lanes</button>
-                        <button class="edit-tab-btn" data-domain="entities">Entities</button>
-                        <button class="edit-tab-btn" data-domain="events">Events</button>
-                        <button class="edit-tab-btn" data-domain="time_epochs">Time/Epochs</button>
-                    </div>
                     <div class="edit-main">
                         <div class="edit-grid-container" id="edit-grid-container">
                             <!-- Table will be injected here -->
@@ -115,6 +115,18 @@ export class DataEditorModal {
                 this.renderGrid();
                 this.renderForm();
             });
+        });
+
+        // Delegate grid row clicks
+        const gridContainer = this.container.querySelector('#edit-grid-container');
+        gridContainer.addEventListener('click', (e) => {
+            const tr = e.target.closest('tr');
+            if (tr && tr.dataset.index !== undefined) {
+                this.saveCurrentForm();
+                this.selectedIndex = parseInt(tr.dataset.index, 10);
+                this.renderGrid(); // update selection highlight
+                this.renderForm();
+            }
         });
 
         // Import / Export
@@ -174,7 +186,7 @@ export class DataEditorModal {
             lanes: JSON.parse(JSON.stringify(dataStore.lanes || [])),
             entities: JSON.parse(JSON.stringify(dataStore.entities || [])),
             events: JSON.parse(JSON.stringify(dataStore.events || [])),
-            time_epochs: JSON.parse(JSON.stringify(dataStore.dataset?.epochs || []))
+            time_epochs: JSON.parse(JSON.stringify(state.worldConfig?.epochs || []))
         };
 
         const worldNameInput = this.container.querySelector('#edit-world-name');

@@ -52,13 +52,18 @@ class RulerRenderer {
         this._container.innerHTML = '';
         this._epochRows.clear();
 
-        // ── Solar Year row (always present) ──
-        this._solarRow = this._createRulerRow('Solar Year', 'solar');
-        this._container.appendChild(this._solarRow);
-
-        // ── Epoch ruler rows ──
         const activeRulers = state.activeEpochRulers;
         const epochs = temporalEngine.getEpochs();
+
+        // ── Solar Year row (if active) ──
+        if (activeRulers.has('solar')) {
+            this._solarRow = this._createRulerRow('Solar Year', 'solar');
+            this._container.appendChild(this._solarRow);
+        } else {
+            this._solarRow = null;
+        }
+
+        // ── Epoch ruler rows ──
 
         for (const epoch of epochs) {
             if (!activeRulers.has(epoch.id)) continue;

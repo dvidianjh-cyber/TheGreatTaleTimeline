@@ -59,12 +59,6 @@ class PanelController {
                 </button>
             </div>
             <div class="toolbar-group toolbar-right">
-                <button class="toolbar-btn" id="btn-import" title="Import Data">
-                    <i data-lucide="upload"></i>
-                </button>
-                <button class="toolbar-btn" id="btn-export" title="Export Data">
-                    <i data-lucide="download"></i>
-                </button>
                 <button class="toolbar-btn" id="btn-edit-data" title="Edit Data">
                     <i data-lucide="edit"></i>
                 </button>
@@ -167,15 +161,6 @@ class PanelController {
             flyoutPanel.toggle();
         });
 
-        // Import
-        this._toolbar.querySelector('#btn-import').addEventListener('click', () => {
-            bus.emit(Events.PANEL_TOGGLED, { panel: 'import', open: true });
-        });
-
-        // Export
-        this._toolbar.querySelector('#btn-export').addEventListener('click', () => {
-            bus.emit(Events.DATA_EXPORTED);
-        });
 
         // Edit Data
         const btnEditData = this._toolbar.querySelector('#btn-edit-data');

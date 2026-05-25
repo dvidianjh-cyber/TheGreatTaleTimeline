@@ -203,6 +203,14 @@ class FlyoutPanel {
         const activeRulers = state.activeEpochRulers;
 
         let html = '';
+        const solarChecked = activeRulers.has('solar') ? 'checked' : '';
+        html += `
+            <label class="flyout-toggle">
+                <input type="checkbox" data-epoch-ruler-id="solar" ${solarChecked} />
+                <span>Primary Time Ruler (Solar Year)</span>
+            </label>
+        `;
+        
         for (const epoch of epochs) {
             const checked = activeRulers.has(epoch.id) ? 'checked' : '';
             const label = epoch.label || epoch.name || epoch.id;

@@ -100,7 +100,7 @@ class DataStore {
                 state.setActiveTimeSystems(this.worldConfig.time_systems.map(s => s.id));
             }
             if (Array.isArray(this.worldConfig.epochs)) {
-                state.setActiveEpochRulers(this.worldConfig.epochs.map(e => e.id));
+                state.setActiveEpochRulers(['solar', ...this.worldConfig.epochs.map(e => e.id)]);
             }
         }
 
