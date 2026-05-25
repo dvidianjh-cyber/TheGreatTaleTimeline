@@ -116,9 +116,62 @@ class DataStore {
      * @private
      */
     _buildIndices() {
+        const syntheticEvents = [];
+        this.entities.forEach(ent => {
+            if (ent.lifespan) {
+                if (ent.lifespan.birth_lane_id && ent.lifespan.start_tu !== undefined) {
+                    syntheticEvents.push({
+                        id: `synth_birth_${ent.id}`,
+                        title: `Birth of ${ent.name}`,
+                        type: 'birth',
+                        lane_id: ent.lifespan.birth_lane_id,
+                        start_tu: ent.lifespan.start_tu,
+                        end_tu: ent.lifespan.start_tu,
+                        time_extent: { start: ent.lifespan.birth || ent.lifespan.start_tu, end: ent.lifespan.birth || ent.lifespan.start_tu, date_unit: ent.lifespan.date_unit || 'TU', is_approximate: ent.lifespan.is_approximate },
+                        participants: [ent.id],
+                        importance: 8,
+                        description: `The birth / arrival of ${ent.name}.`,
+                        isSynthetic: true
+                    });
+                }
+                if (ent.lifespan.death_lane_id && ent.lifespan.death_tu !== undefined) {
+                    syntheticEvents.push({
+                        id: `synth_death_${ent.id}`,
+                        title: `Death of ${ent.name}`,
+                        type: 'death',
+                        lane_id: ent.lifespan.death_lane_id,
+                        start_tu: ent.lifespan.death_tu,
+                        end_tu: ent.lifespan.death_tu,
+                        time_extent: { start: ent.lifespan.death || ent.lifespan.death_tu, end: ent.lifespan.death || ent.lifespan.death_tu, date_unit: ent.lifespan.date_unit || 'TU', is_approximate: ent.lifespan.is_approximate },
+                        participants: [ent.id],
+                        importance: 8,
+                        description: `The death of ${ent.name}.`,
+                        isSynthetic: true
+                    });
+                }
+                if (ent.lifespan.departure_lane_id && ent.lifespan.departure_tu !== undefined) {
+                    syntheticEvents.push({
+                        id: `synth_departure_${ent.id}`,
+                        title: `Departure of ${ent.name}`,
+                        type: 'migration',
+                        lane_id: ent.lifespan.departure_lane_id,
+                        start_tu: ent.lifespan.departure_tu,
+                        end_tu: ent.lifespan.departure_tu,
+                        time_extent: { start: ent.lifespan.departure || ent.lifespan.departure_tu, end: ent.lifespan.departure || ent.lifespan.departure_tu, date_unit: ent.lifespan.date_unit || 'TU', is_approximate: ent.lifespan.is_approximate },
+                        participants: [ent.id],
+                        importance: 8,
+                        description: `The departure of ${ent.name}.`,
+                        isSynthetic: true
+                    });
+                }
+            }
+        });
+
+        const allEvents = [...this.events, ...syntheticEvents];
+
         // Event index
         this._eventIndex.clear();
-        this.events.forEach(evt => this._eventIndex.set(evt.id, evt));
+        allEvents.forEach(evt => this._eventIndex.set(evt.id, evt));
 
         // Entity index
         this._entityIndex.clear();
@@ -129,13 +182,13 @@ class DataStore {
         this.lanes.forEach(lane => this._laneIndex.set(lane.id, lane));
 
         // Events sorted by start time
-        this._eventsByStart = [...this.events].sort(
+        this._eventsByStart = [...allEvents].sort(
             (a, b) => a.start_tu - b.start_tu
         );
 
         // Events grouped by lane
         this._eventsByLane.clear();
-        this.events.forEach(evt => {
+        allEvents.forEach(evt => {
             if (evt.lane_id) {
                 if (!this._eventsByLane.has(evt.lane_id)) {
                     this._eventsByLane.set(evt.lane_id, []);
@@ -146,7 +199,7 @@ class DataStore {
 
         // Events grouped by entity (participant)
         this._eventsByEntity.clear();
-        this.events.forEach(evt => {
+        allEvents.forEach(evt => {
             if (Array.isArray(evt.participants)) {
                 evt.participants.forEach(entityId => {
                     if (!this._eventsByEntity.has(entityId)) {
@@ -164,7 +217,7 @@ class DataStore {
 
         // Sub-area indexing
         this._subAreaIndicesByLane.clear();
-        this.events.forEach(evt => {
+        allEvents.forEach(evt => {
             if (evt.lane_id) {
                 const subArea = evt.sub_area || (evt.metadata && evt.metadata.sub_area) || 'default';
                 if (!this._subAreaIndicesByLane.has(evt.lane_id)) {

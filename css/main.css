@@ -1220,6 +1220,7 @@ h4 {
 
 .edit-grid-container {
     flex: 1;
+    flex-basis: 60%;
     overflow-y: auto;
     border-bottom: 1px solid var(--border-medium);
     padding: var(--spacing-sm);
@@ -1271,7 +1272,7 @@ h4 {
 .edit-form-group {
     margin-bottom: var(--spacing-md);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 4px;
 }
 
@@ -1468,6 +1469,7 @@ h4 {
     cursor: pointer;
     border: 1px solid var(--border-medium);
 }
+
 .color-picker-swatch.selected {
     border: 2px solid var(--accent-gold);
 }
@@ -1480,6 +1482,14 @@ h4 {
     display: grid;
     grid-template-columns: 3fr 1fr;
     gap: var(--spacing-md);
+}
+
+.tooltip-grid.tooltip-has-range {
+    grid-template-columns: 1fr 1fr;
+}
+
+.tooltip-grid.tooltip-has-range .tooltip-date-container {
+    font-size: 0.9em;
 }
 
 .tooltip-col-left {
@@ -1496,19 +1506,22 @@ h4 {
     padding-left: var(--spacing-sm);
 }
 
-.tooltip-date-baseline {
-    font-weight: 700;
-    color: var(--text-accent);
+.tooltip-date-primary {
+    font-weight: bold;
+    color: #000;
+    font-size: 1.1em;
 }
 
-.tooltip-date-era {
-    font-weight: 700;
-    color: var(--text-accent);
+.tooltip-date-secondary {
+    color: red;
+    font-style: italic;
+    font-size: 0.9em;
 }
 
 .tooltip-participant-list {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 4px;
 }
 

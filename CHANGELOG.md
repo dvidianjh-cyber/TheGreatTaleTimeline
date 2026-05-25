@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to The Great Tale Timeline are documented here.
-## [v0.2.0] — 2026-05-18
+## [v0.1.5] — 2026-05-18
 
 ### Added
 - **Relative Date Lifespans**: Extended the input-centric dating system to entity lifespans. Entities can now have their births, deaths, and departures defined using relative epoch units (e.g. `FA`, `SA`, `TA`) instead of only absolute Time Units (`TU`).

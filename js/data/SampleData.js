@@ -112,73 +112,73 @@ const SAMPLE_DATASET = {
             id: "char_morgoth",
             name: "Morgoth (Melkor)",
             metadata: { race: "Ainur", subrace: "Vala", color: "#1a0a2e" },
-            lifespan: { start_tu: 1, departure_tu: 44477 }
+            lifespan: { start_tu: 1, departure_tu: 44477, departure_lane_id: "lane_beleriand" }
         },
         {
             id: "char_sauron",
             name: "Sauron",
             metadata: { race: "Ainur", subrace: "Maia", color: "#ff4500" },
-            lifespan: { start_tu: 1, departure_tu: 50941 }
+            lifespan: { start_tu: 1, departure_tu: 50941, departure_lane_id: "lane_mordor" }
         },
         {
             id: "char_feanor",
             name: "Fëanor",
             metadata: { race: "Elf", subrace: "Noldor", color: "#ffd700" },
-            lifespan: { start_tu: 36407, death_tu: 43892 }
+            lifespan: { start_tu: 36407, birth_lane_id: "lane_valinor", death_tu: 43892, death_lane_id: "lane_beleriand" }
         },
         {
             id: "char_galadriel",
             name: "Galadriel",
             metadata: { race: "Elf", subrace: "Noldor/Teleri", color: "#EEDD82" },
-            lifespan: { start_tu: 37940, departure_tu: 50941 }
+            lifespan: { start_tu: 37940, birth_lane_id: "lane_valinor", departure_tu: 50941, departure_lane_id: "lane_eriador" }
         },
         {
             id: "char_elrond",
             name: "Elrond",
             metadata: { race: "Half-elven", subrace: "Peredhel", color: "#6495ED" },
-            lifespan: { start_tu: 44430, departure_tu: 50941 }
+            lifespan: { start_tu: 44430, birth_lane_id: "lane_beleriand", departure_tu: 50941, departure_lane_id: "lane_eriador" }
         },
         {
             id: "char_gilgalad",
             name: "Gil-galad",
             metadata: { race: "Elf", subrace: "Noldor", color: "#4682B4" },
-            lifespan: { start_tu: 44200, death_tu: 47919 }
+            lifespan: { start_tu: 44200, birth_lane_id: "lane_beleriand", death_tu: 47919, death_lane_id: "lane_mordor" }
         },
         {
             id: "char_isildur",
             name: "Isildur",
             metadata: { race: "Man", subrace: "Dúnedain", color: "#C0C0C0" },
-            lifespan: { start_tu: 47659, death_tu: 47922 }
+            lifespan: { start_tu: 47659, birth_lane_id: "lane_numenor", death_tu: 47922, death_lane_id: "lane_rhovanion" }
         },
         {
             id: "char_aragorn",
             name: "Aragorn II Elessar",
             metadata: { race: "Man", subrace: "Dúnedain", color: "#E8E8E8" },
-            lifespan: { date_unit: "TA", birth: 2932, death: 3022 }
+            lifespan: { date_unit: "TA", birth: 2932, birth_lane_id: "lane_eriador", death: 3022, death_lane_id: "lane_gondor" }
         },
         {
             id: "char_gandalf",
             name: "Gandalf (Olórin)",
             metadata: { race: "Ainur", subrace: "Maia (Istar)", color: "#F5F5DC" },
-            lifespan: { start_tu: 1, departure_tu: 50941 }
+            lifespan: { start_tu: 1, departure_tu: 50941, departure_lane_id: "lane_eriador" }
         },
         {
             id: "char_durin",
             name: "Durin the Deathless",
             metadata: { race: "Dwarf", subrace: "Longbeard", color: "#B87333" },
-            lifespan: { date_unit: "FA", birth: 1, death: 214, is_approximate: true }
+            lifespan: { date_unit: "FA", birth: 1, birth_lane_id: "lane_rhovanion", death: 214, death_lane_id: "lane_rhovanion", is_approximate: true }
         },
         {
             id: "char_earendil",
             name: "Eärendil",
             metadata: { race: "Half-elven", subrace: "Peredhel", color: "#FFD700" },
-            lifespan: { date_unit: "FA", birth: 504, departure: 591 }
+            lifespan: { date_unit: "FA", birth: 504, birth_lane_id: "lane_beleriand", departure: 591, departure_lane_id: "lane_valinor" }
         },
         {
             id: "char_ungoliant",
             name: "Ungoliant",
             metadata: { race: "Spirit", subrace: "Dark Spirit", color: "#2d0a2e" },
-            lifespan: { start_tu: 1, death_tu: 43900, is_approximate: true }
+            lifespan: { start_tu: 1, death_tu: 43900, death_lane_id: "lane_beleriand", is_approximate: true }
         }
     ],
 

@@ -52,6 +52,7 @@ export class DataEditorModal {
                             <button class="edit-tab-btn" data-domain="entities">Entities</button>
                             <button class="edit-tab-btn" data-domain="events">Events</button>
                             <button class="edit-tab-btn" data-domain="time_epochs">Time/Epochs</button>
+                            <button class="edit-tab-btn" data-domain="rulers">Rulers</button>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px;">
@@ -186,7 +187,8 @@ export class DataEditorModal {
             lanes: JSON.parse(JSON.stringify(dataStore.lanes || [])),
             entities: JSON.parse(JSON.stringify(dataStore.entities || [])),
             events: JSON.parse(JSON.stringify(dataStore.events || [])),
-            time_epochs: JSON.parse(JSON.stringify(state.worldConfig?.epochs || []))
+            time_epochs: JSON.parse(JSON.stringify(state.worldConfig?.epochs || [])),
+            rulers: JSON.parse(JSON.stringify(state.worldConfig?.rulers || []))
         };
 
         const worldNameInput = this.container.querySelector('#edit-world-name');
@@ -214,7 +216,6 @@ export class DataEditorModal {
         try {
             // Apply changes back to state/dataStore
             
-            // Reconstruct the full dataset format expected by DataStore
             const newDataset = {
                 world_config: this.editData.world_config,
                 epochs: this.editData.time_epochs,
@@ -222,6 +223,8 @@ export class DataEditorModal {
                 entities: this.editData.entities,
                 events: this.editData.events
             };
+            newDataset.world_config.epochs = this.editData.time_epochs;
+            newDataset.world_config.rulers = this.editData.rulers;
 
             // loadDataset is synchronous, rebuild indices and notify systems
             dataStore.loadDataset(newDataset);
@@ -265,11 +268,14 @@ export class DataEditorModal {
             case 'time_epochs':
                 newItem = {
                     id: `epoch_${Date.now()}`,
-                    name: 'New Epoch',
+                    label: 'New Epoch',
                     abbreviation: 'NE',
                     start_tu: 0,
                     end_tu: 100
                 };
+                break;
+            case 'rulers':
+                newItem = { label: 'New Ruler', epoch: '', visible: true };
                 break;
         }
 
@@ -355,17 +361,20 @@ export class DataEditorModal {
         // Define columns based on domain
         let cols = [];
         if (this.activeDomain === 'lanes') {
-            cols = ['ID', 'Label', 'Order'];
-            html += '<th>ID</th><th>Label</th><th>Order</th>';
+            cols = ['Color', 'Label', 'Order'];
+            html += '<th>Color</th><th>Label</th><th>Order</th>';
         } else if (this.activeDomain === 'entities') {
-            cols = ['ID', 'Name', 'Race'];
-            html += '<th>ID</th><th>Name</th><th>Race</th>';
+            cols = ['Color', 'Name', 'Race'];
+            html += '<th>Color</th><th>Name</th><th>Race</th>';
         } else if (this.activeDomain === 'events') {
-            cols = ['ID', 'Title', 'Timeframe'];
-            html += '<th>ID</th><th>Title</th><th>Timeframe</th>';
+            cols = ['Type', 'Title', 'Lane'];
+            html += '<th>Type</th><th>Title</th><th>Lane</th>';
         } else if (this.activeDomain === 'time_epochs') {
-            cols = ['ID', 'Name', 'Abbreviation'];
-            html += '<th>ID</th><th>Name</th><th>Abbrev</th>';
+            cols = ['ID', 'Title', 'Abbreviation'];
+            html += '<th>ID</th><th>Title</th><th>Abbrev</th>';
+        } else if (this.activeDomain === 'rulers') {
+            cols = ['Label', 'Epoch', 'Visible'];
+            html += '<th>Label</th><th>Epoch</th><th>Visible</th>';
         }
         html += '</tr></thead><tbody>';
 
@@ -374,17 +383,20 @@ export class DataEditorModal {
             html += `<tr data-index="${index}" ${isSelected}>`;
             
             if (this.activeDomain === 'lanes') {
-                html += `<td>${item.id || ''}</td><td>${item.label || ''}</td><td>${item.order || ''}</td>`;
+                const color = item.color_hint || '#f4eedb';
+                html += `<td><div class="color-picker-swatch" style="background: ${color}; width: 16px; height: 16px; border-radius: 4px; display: inline-block;"></div></td><td>${item.label || ''}</td><td>${item.order || ''}</td>`;
             } else if (this.activeDomain === 'entities') {
                 const race = item.metadata ? item.metadata.race : '';
-                html += `<td>${item.id || ''}</td><td>${item.name || ''}</td><td>${race || ''}</td>`;
+                const color = item.metadata && item.metadata.color ? item.metadata.color : '#E8E8E8';
+                html += `<td><div class="color-picker-swatch" style="background: ${color}; width: 16px; height: 16px; border-radius: 4px; display: inline-block;"></div></td><td>${item.name || ''}</td><td>${race || ''}</td>`;
             } else if (this.activeDomain === 'events') {
-                const startLabel = item.time_extent ? `${item.time_extent.start} ${item.time_extent.date_unit || 'YL'}` : '';
-                const endLabel = item.time_extent && item.time_extent.end !== item.time_extent.start ? ` to ${item.time_extent.end} ${item.time_extent.date_unit || 'YL'}` : '';
-                const timeStr = `${startLabel}${endLabel}`;
-                html += `<td>${item.id || ''}</td><td>${item.title || ''}</td><td>${timeStr}</td>`;
+                const lane = this.editData.lanes.find(l => l.id === item.lane_id);
+                const laneLabel = lane ? (lane.label || lane.name || lane.id) : (item.lane_id || '');
+                html += `<td><span class="tooltip-type-badge tooltip-type-${item.type || 'default'}">${item.type || ''}</span></td><td>${item.title || ''}</td><td>${laneLabel}</td>`;
             } else if (this.activeDomain === 'time_epochs') {
-                html += `<td>${item.id || ''}</td><td>${item.name || ''}</td><td>${item.abbreviation || ''}</td>`;
+                html += `<td>${item.id || ''}</td><td>${item.label || item.name || ''}</td><td>${item.abbreviation || ''}</td>`;
+            } else if (this.activeDomain === 'rulers') {
+                html += `<td>${item.label || ''}</td><td>${item.epoch || ''}</td><td>${item.visible !== false ? 'Yes' : 'No'}</td>`;
             }
             
             html += '</tr>';
@@ -444,10 +456,18 @@ export class DataEditorModal {
                     label: `${e.abbreviation} (${e.label || e.name || e.id})`
                 }))
             ];
+            
+            const laneOptions = [{ value: '', label: '-- None --' }, ...this.editData.lanes.map(l => ({ value: l.id, label: l.label || l.name || l.id }))];
+            const birthLane = item.lifespan ? (item.lifespan.birth_lane_id || '') : '';
+            const deathLane = item.lifespan ? (item.lifespan.death_lane_id || '') : '';
+            const departureLane = item.lifespan ? (item.lifespan.departure_lane_id || '') : '';
 
             html += this.buildField('number', 'lifespan.birth', 'Birth Date / Start', birthVal);
+            html += this.buildField('selectOptions', 'lifespan.birth_lane_id', 'Birth Lane', birthLane, laneOptions);
             html += this.buildField('number', 'lifespan.death', 'Death Date (optional)', deathVal);
+            html += this.buildField('selectOptions', 'lifespan.death_lane_id', 'Death Lane (optional)', deathLane, laneOptions);
             html += this.buildField('number', 'lifespan.departure', 'Departure Date (optional)', departureVal);
+            html += this.buildField('selectOptions', 'lifespan.departure_lane_id', 'Departure Lane (optional)', departureLane, laneOptions);
             html += this.buildField('selectOptions', 'lifespan.date_unit', 'Date Unit', dateUnit, epochOptions);
             html += this.buildField('checkbox', 'lifespan.is_approximate', 'Is Approximate', isApprox);
         } else if (this.activeDomain === 'events') {
@@ -496,11 +516,16 @@ export class DataEditorModal {
             html += this.buildField('textarea', 'description', 'Description', item.description);
         } else if (this.activeDomain === 'time_epochs') {
             html += this.buildField('text', 'id', 'Epoch ID', item.id, true);
-            html += this.buildField('text', 'name', 'Epoch Name', item.name);
+            html += this.buildField('text', 'label', 'Epoch Title', item.label || item.name);
             html += this.buildField('text', 'abbreviation', 'Abbreviation', item.abbreviation);
             html += '<h4 style="margin: 16px 0 8px 0; color: var(--text-accent);">Time Range (Absolute TUs)</h4>';
             html += this.buildField('number', 'start_tu', 'Start TU', item.start_tu || 0);
             html += this.buildField('number', 'end_tu', 'End TU', item.end_tu || 0);
+        } else if (this.activeDomain === 'rulers') {
+            html += this.buildField('text', 'label', 'Ruler Label', item.label);
+            const epochOptions = this.editData.time_epochs.map(e => ({ value: e.id, label: e.label || e.name || e.id }));
+            html += this.buildField('selectOptions', 'epoch', 'Epoch', item.epoch, epochOptions);
+            html += this.buildField('checkbox', 'visible', 'Visible by Default', item.visible !== false);
         }
 
         html += '</form>';

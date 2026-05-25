@@ -90,9 +90,8 @@ class TooltipManager {
                 ? ` — ${temporalEngine.formatUnifiedDate(evt.end_tu, systemId, true)}`
                 : '';
             
-            const isPrimary = currentEpoch && systemId === currentEpoch.id;
-            const isBaseline = systemId === baselineId;
-            const labelClass = (isPrimary || isBaseline) ? 'tooltip-date-baseline' : 'tooltip-date-era';
+            const isPrimaryDate = currentEpoch ? (systemId === currentEpoch.id) : (systemId === baselineId);
+            const labelClass = isPrimaryDate ? 'tooltip-date-primary' : 'tooltip-date-secondary';
             
             return `<div class="${labelClass}">${startLabel}${endLabel}</div>`;
         }).join('');
@@ -107,8 +106,8 @@ class TooltipManager {
                 return entity ? this._sanitize(entity.name) : id;
             });
             participantHTML = `
-                <div class="tooltip-participants">
-                    <span class="tooltip-section-label">Participants</span>
+                <div class="tooltip-participants" style="margin-top: 8px;">
+                    <div class="tooltip-section-label" style="margin-bottom: 4px;">Participants</div>
                     <div class="tooltip-participant-list">${names.map(n => `<span class="tooltip-chip">${n}</span>`).join('')}</div>
                 </div>
             `;
@@ -122,20 +121,23 @@ class TooltipManager {
         // Importance
         const importanceStars = '★'.repeat(evt.importance || 5) + '☆'.repeat(10 - (evt.importance || 5));
 
+        const isRange = evt.start_tu !== evt.end_tu;
+        const rangeClass = isRange ? ' tooltip-has-range' : '';
+
         this._tooltip.innerHTML = `
-            <div class="tooltip-grid">
+            <div class="tooltip-grid${rangeClass}">
                 <div class="tooltip-col-left">
                     <h3 class="tooltip-title">${this._sanitize(evt.title || 'Unknown Event')}</h3>
-                    <div class="tooltip-importance">${importanceStars}</div>
                     ${evt.description ? `<p class="tooltip-description">${this._sanitize(evt.description)}</p>` : ''}
+                    ${participantHTML}
                 </div>
                 <div class="tooltip-col-right">
                     ${typeBadge}
+                    <div class="tooltip-importance" style="margin: 4px 0; font-size: 0.9em; color: var(--accent-gold);">${importanceStars}</div>
                     <div class="tooltip-date-container" style="display:flex; flex-direction:column; gap:2px;">
                         ${dateRows}
                         ${approxTag}
                     </div>
-                    ${participantHTML}
                 </div>
             </div>
         `;
