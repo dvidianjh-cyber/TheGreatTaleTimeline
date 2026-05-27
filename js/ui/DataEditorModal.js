@@ -2,6 +2,8 @@ import bus, { Events } from '../core/EventBus.js';
 import state from '../core/StateManager.js';
 import dataStore from '../data/DataStore.js';
 import temporalEngine from '../core/TemporalEngine.js';
+import alertDialog from './AlertDialog.js';
+import confirmDialog from './ConfirmDialog.js';
 
 export class DataEditorModal {
     constructor() {
@@ -48,8 +50,8 @@ export class DataEditorModal {
                 <div class="edit-modal-header" style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 16px;">
                         <h2>Edit World Data</h2>
-                        <input type="text" id="edit-world-name" class="edit-form-control" placeholder="World Name" style="width: 200px;" />
                         <div class="edit-tabs-header" style="display: flex; gap: 8px;">
+                            <button class="edit-tab-btn" data-domain="world_config">World Settings</button>
                             <button class="edit-tab-btn edit-tab-btn--active" data-domain="lanes">Lanes</button>
                             <button class="edit-tab-btn" data-domain="entities">Entities</button>
                             <button class="edit-tab-btn" data-domain="events">Events</button>
@@ -61,6 +63,9 @@ export class DataEditorModal {
                         <select id="edit-sample-dropdown" class="edit-form-control" style="width: 150px; display: none;">
                             <option value="">Load Sample...</option>
                         </select>
+                        <button class="toolbar-btn" id="edit-btn-new" title="New World">
+                            <i data-lucide="file-plus"></i> New
+                        </button>
                         <button class="toolbar-btn" id="edit-btn-import" title="Import Data">
                             <i data-lucide="upload"></i> Import
                         </button>
@@ -157,6 +162,32 @@ export class DataEditorModal {
             bus.emit(Events.PANEL_TOGGLED, { panel: 'import', open: true });
             this.close();
         });
+        
+        // New World
+        this.container.querySelector('#edit-btn-new').addEventListener('click', async () => {
+            if (await confirmDialog.show('Create a new blank world? This will overwrite your current unsaved changes in the editor.')) {
+                this.editData = {
+                    world_config: {
+                        world_name: 'New World',
+                        time_systems: [{ id: 'solar', name: 'Solar Years', isPrimary: true, base_unit: 1 }],
+                        epochs: [],
+                        rulers: [],
+                        default_mode: 'geographic',
+                        default_visible_timespan: [0, 100]
+                    },
+                    lanes: [],
+                    entities: [],
+                    events: [],
+                    time_epochs: [],
+                    rulers: []
+                };
+                const worldNameInput = this.container.querySelector('#edit-world-name');
+                if (worldNameInput) worldNameInput.value = this.editData.world_config.world_name;
+                this.selectedIndex = null;
+                this.renderGrid();
+                this.renderForm();
+            }
+        });
         // Export
         this.container.querySelector('#edit-btn-export').addEventListener('click', () => {
             bus.emit(Events.EXPORT_REQUESTED);
@@ -184,8 +215,7 @@ export class DataEditorModal {
             sampleDropdown.addEventListener('change', async (e) => {
                 const file = e.target.value;
                 if (!file) return;
-                
-                if (confirm('Load this sample data? This will overwrite your current unsaved changes in the editor.')) {
+                if (await confirmDialog.show('Load this sample data? This will overwrite your current unsaved changes in the editor.')) {
                     try {
                         const res = await fetch(file);
                         const data = await res.json();
@@ -208,8 +238,8 @@ export class DataEditorModal {
                         this.renderForm();
                         
                     } catch (err) {
-                        console.error('Failed to load sample data', err);
-                        alert('Failed to load sample data. See console for details.');
+                        console.error('Sample data load error:', err);
+                        alertDialog.show('Failed to load sample data. See console for details.', 'Error');
                     }
                 }
                 
@@ -217,14 +247,6 @@ export class DataEditorModal {
                 sampleDropdown.value = '';
             });
         }
-        
-        // World Name binding
-        const worldNameInput = this.container.querySelector('#edit-world-name');
-        worldNameInput.addEventListener('change', (e) => {
-            if (this.editData.world_config) {
-                this.editData.world_config.world_name = e.target.value;
-            }
-        });
 
         // Delegate form changes to auto-update grid if needed
         const formContainer = this.container.querySelector('#edit-form-container');
@@ -256,7 +278,7 @@ export class DataEditorModal {
 
     open() {
         if (!dataStore.hasData) {
-            alert('Please load data first.');
+            alertDialog.show('Please load data first.', 'Notice');
             return;
         }
 
@@ -310,13 +332,16 @@ export class DataEditorModal {
             this.close();
             console.log("Data saved and applied.");
         } catch (error) {
-            alert('Failed to save data: ' + error.message);
+            console.error('Save failed:', error);
+            alertDialog.show('Failed to save data: ' + error.message, 'Error');
         }
     }
 
     addNewRecord() {
         this.saveCurrentForm();
         
+        if (this.activeDomain === 'world_config') return;
+
         const list = this.editData[this.activeDomain];
         let newItem = {};
 
@@ -375,7 +400,17 @@ export class DataEditorModal {
         if (!form) return;
 
         const formData = new FormData(form);
-        const item = this.editData[this.activeDomain][this.selectedIndex];
+        const list = this.activeDomain === 'world_config' ? [this.editData.world_config] : this.editData[this.activeDomain];
+        const item = list[this.selectedIndex];
+        
+        if (this.activeDomain === 'world_config') {
+            item.default_visible_timespan = [
+                this.parseValue(formData.get('default_visible_timespan_0')),
+                this.parseValue(formData.get('default_visible_timespan_1'))
+            ];
+            formData.delete('default_visible_timespan_0');
+            formData.delete('default_visible_timespan_1');
+        }
 
         // Update item fields based on form data
         for (let [key, value] of formData.entries()) {
@@ -427,8 +462,19 @@ export class DataEditorModal {
     }
 
     renderGrid() {
-        const list = this.editData[this.activeDomain];
         const container = this.container.querySelector('#edit-grid-container');
+        const formContainer = this.container.querySelector('#edit-form-container');
+
+        if (this.activeDomain === 'world_config') {
+            container.style.display = 'none';
+            formContainer.style.flex = '1 1 100%';
+            return;
+        } else {
+            container.style.display = 'block';
+            formContainer.style.flex = '1 1 60%';
+        }
+
+        const list = this.editData[this.activeDomain];
 
         if (!list || list.length === 0) {
             container.innerHTML = '<div style="padding: 16px; color: var(--text-muted);">No records found.</div>';
@@ -544,16 +590,28 @@ export class DataEditorModal {
         const placeholder = container.querySelector('#edit-form-placeholder');
         if (oldForm) oldForm.remove();
         if (placeholder) placeholder.style.display = 'none';
+        
+        if (this.activeDomain === 'world_config') {
+            this.selectedIndex = 0;
+        }
 
         if (this.selectedIndex === null) {
             if (placeholder) placeholder.style.display = 'block';
             return;
         }
 
-        const item = this.editData[this.activeDomain][this.selectedIndex];
+        const list = this.activeDomain === 'world_config' ? [this.editData.world_config] : this.editData[this.activeDomain];
+        const item = list[this.selectedIndex];
         let html = '<form id="edit-form" onsubmit="return false;">';
 
-        if (this.activeDomain === 'lanes') {
+        if (this.activeDomain === 'world_config') {
+            html += this.buildField('text', 'world_name', 'World Name', item.world_name);
+            html += this.buildField('select', 'default_mode', 'Default View Mode', item.default_mode || 'geographic', ['geographic', 'biographical']);
+            const timeSpan = item.default_visible_timespan || [0, 100];
+            html += '<h4 style="margin: 16px 0 8px 0; color: var(--text-accent);">Default Visible Timespan (TU)</h4>';
+            html += this.buildField('number', 'default_visible_timespan_0', 'Start TU', timeSpan[0]);
+            html += this.buildField('number', 'default_visible_timespan_1', 'End TU', timeSpan[1]);
+        } else if (this.activeDomain === 'lanes') {
             html += this.buildField('text', 'id', 'Lane ID', item.id, true);
             html += this.buildField('text', 'label', 'Lane Label', item.label);
             html += this.buildField('number', 'order', 'Sort Order', item.order);

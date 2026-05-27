@@ -1,6 +1,11 @@
 {
   "world_config": {
-    "world_name": "Tolkein's Arda",
+    "world_name": "Arda (The Great Tale)",
+    "default_mode": "geographic",
+    "default_visible_timespan": [
+      33000,
+      52000
+    ],
     "time_systems": [
       {
         "id": "solar",
@@ -66,12 +71,12 @@
       {
         "label": "Lamps Year (Valian)",
         "epoch": "lamps",
-        "visible": true
+        "visible": false
       },
       {
         "label": "Trees Year (Valian)",
         "epoch": "trees",
-        "visible": true
+        "visible": false
       },
       {
         "label": "First Age Year",

@@ -100,7 +100,17 @@ class DataStore {
                 state.setActiveTimeSystems(this.worldConfig.time_systems.map(s => s.id));
             }
             if (Array.isArray(this.worldConfig.epochs)) {
-                state.setActiveEpochRulers(['solar', ...this.worldConfig.epochs.map(e => e.id)]);
+                const activeRulers = ['solar'];
+                const rulerConfigs = this.worldConfig.rulers || [];
+                
+                for (const epoch of this.worldConfig.epochs) {
+                    const rc = rulerConfigs.find(r => r.epoch === epoch.id);
+                    if (!rc || rc.visible !== false) {
+                        activeRulers.push(epoch.id);
+                    }
+                }
+                
+                state.setActiveEpochRulers(activeRulers);
             }
         }
 
@@ -426,7 +436,7 @@ class DataStore {
      * @returns {boolean}
      */
     get hasData() {
-        return this.events.length > 0 || this.entities.length > 0;
+        return this.worldConfig !== null || this.events.length > 0 || this.entities.length > 0;
     }
 }
 
