@@ -95,19 +95,8 @@ class EventNodeRenderer {
         const startX = temporalEngine.tuToPixel(evt.start_tu);
         const endX = temporalEngine.tuToPixel(evt.end_tu);
         
-        // Staggered vertical positioning based on sub_area
-        const laneTopY = laneRenderer.getLaneTopY(evt.lane_id);
-        const laneHeight = 80 * state.zoomY;
-        
-        // Defensive check: ensure we pick up the sub_area from all possible schema locations
-        const subArea = evt.sub_area || (evt.metadata && evt.metadata.sub_area) || 'default';
-        const subIndex = dataStore.getSubAreaIndex(evt.lane_id, subArea);
-        const subCount = Math.max(1, dataStore.getSubAreaCount(evt.lane_id));
-        
-        // Slot distribution: (index + 1) / (count + 1) to avoid top/bottom edges
-        // Or (index + 0.5) / count for centered slots
-        const verticalRatio = (subIndex + 0.5) / subCount;
-        const laneY = laneTopY + (verticalRatio * laneHeight);
+        // Staggered vertical positioning based on sub_area using the abstracted getEventY
+        const laneY = laneRenderer.getEventY(evt);
 
         const container = new Container();
         container.eventMode = 'static';

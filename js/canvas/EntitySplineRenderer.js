@@ -69,14 +69,14 @@ class EntitySplineRenderer {
         if (entity.lifespan && entity.lifespan.start_tu !== undefined) {
             const firstEvent = events[0];
             const startX = temporalEngine.tuToPixel(entity.lifespan.start_tu);
-            const startY = laneRenderer.getLaneY(firstEvent.lane_id);
+            const startY = laneRenderer.getEventY(firstEvent);
             rawPoints.push({ x: startX, y: startY });
         }
 
         for (const evt of events) {
             if (!evt.lane_id) continue;
             const x = temporalEngine.tuToPixel(evt.start_tu);
-            const y = laneRenderer.getLaneY(evt.lane_id);
+            const y = laneRenderer.getEventY(evt);
             rawPoints.push({ x, y });
         }
 
@@ -86,13 +86,13 @@ class EntitySplineRenderer {
             const lastEvent = events[events.length - 1];
             if (endTU !== undefined) {
                 const endX = temporalEngine.tuToPixel(endTU);
-                const endY = laneRenderer.getLaneY(lastEvent.lane_id);
+                const endY = laneRenderer.getEventY(lastEvent);
                 rawPoints.push({ x: endX, y: endY });
             } else {
                 // Immortal persistence — extend to right edge
                 const extent = temporalEngine.getTimelineExtent();
                 const endX = temporalEngine.tuToPixel(extent.end);
-                const endY = laneRenderer.getLaneY(lastEvent.lane_id);
+                const endY = laneRenderer.getEventY(lastEvent);
                 rawPoints.push({ x: endX, y: endY });
             }
         }

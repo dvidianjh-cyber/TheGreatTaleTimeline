@@ -1,0 +1,233 @@
+{
+    "world_config": {
+        "world_name": "Roshar",
+        "default_mode": "geographic",
+        "default_visible_timespan": [
+            4000,
+            9600
+        ],
+        "time_systems": [
+            {
+                "id": "rosharan",
+                "name": "Rosharan Solar Year",
+                "abbreviation": "RY",
+                "isPrimary": true,
+                "conversion_factor": 1
+            }
+        ],
+        "epochs": [
+            {
+                "id": "ep_heraldic",
+                "label": "Heraldic Epochs",
+                "abbreviation": "HE",
+                "time_system": "rosharan",
+                "start_tu": 0,
+                "end_tu": 5000,
+                "color": "#4a5568"
+            },
+            {
+                "id": "ep_solitude",
+                "label": "Era of Solitude",
+                "abbreviation": "ES",
+                "time_system": "rosharan",
+                "start_tu": 5000,
+                "end_tu": 9500,
+                "color": "#718096"
+            },
+            {
+                "id": "ep_true_desolation",
+                "label": "True Desolation",
+                "abbreviation": "TD",
+                "time_system": "rosharan",
+                "start_tu": 9500,
+                "end_tu": 10000,
+                "color": "#e53e3e"
+            }
+        ],
+        "rulers": [
+            {
+                "label": "Heraldic Epochs",
+                "epoch": "ep_heraldic",
+                "visible": false
+            },
+            {
+                "label": "Era of Solitude",
+                "epoch": "ep_solitude",
+                "visible": true
+            },
+            {
+                "label": "True Desolation",
+                "epoch": "ep_true_desolation",
+                "visible": true
+            }
+        ]
+    },
+    "lanes": [
+        {
+            "id": "lane_alethkar",
+            "label": "Alethkar",
+            "color_hint": "#3182ce",
+            "order": 0
+        },
+        {
+            "id": "lane_urithiru",
+            "label": "Urithiru",
+            "color_hint": "#ecc94b",
+            "order": 1
+        },
+        {
+            "id": "lane_shattered_plains",
+            "label": "Shattered Plains",
+            "color_hint": "#dd6b20",
+            "order": 2
+        },
+        {
+            "id": "lane_shinovar",
+            "label": "Shinovar",
+            "color_hint": "#48bb78",
+            "order": 3
+        }
+    ],
+    "entities": [
+        {
+            "id": "char_dalinar",
+            "name": "Dalinar Kholin",
+            "metadata": {
+                "race": "Alethi",
+                "color": "#2b6cb0",
+                "sub_area": "Kholinar"
+            },
+            "lifespan": {
+                "date_unit": "ES",
+                "birth": 4443,
+                "birth_lane_id": "lane_alethkar",
+                "birth_sub_area": "Rathalas",
+                "is_approximate": false
+            }
+        },
+        {
+            "id": "char_kaladin",
+            "name": "Kaladin Stormblessed",
+            "metadata": {
+                "race": "Alethi",
+                "color": "#2c5282",
+                "sub_area": "Hearthstone"
+            },
+            "lifespan": {
+                "date_unit": "ES",
+                "birth": 4479,
+                "birth_lane_id": "lane_alethkar",
+                "birth_sub_area": "Hearthstone",
+                "is_approximate": false
+            }
+        },
+        {
+            "id": "char_szeth",
+            "name": "Szeth-son-son-Vallano",
+            "metadata": {
+                "race": "Shin",
+                "color": "#ffffff",
+                "sub_area": "Stone Shamanate"
+            },
+            "lifespan": {
+                "date_unit": "ES",
+                "birth": 4460,
+                "birth_lane_id": "lane_shinovar",
+                "birth_sub_area": "Valley of Truth",
+                "is_approximate": true
+            }
+        }
+    ],
+    "events": [
+        {
+            "id": "evt_aharietiam",
+            "title": "Aharietiam",
+            "description": "The Final Desolation, where the Heralds abandoned the Oathpact.",
+            "time_extent": {
+                "date_unit": "HE",
+                "start": 5000,
+                "end": 5000,
+                "is_approximate": true
+            },
+            "lane_id": "lane_alethkar",
+            "sub_area": "Alethela",
+            "participants": [],
+            "type": "catastrophe",
+            "importance": 10
+        },
+        {
+            "id": "evt_recreance",
+            "title": "The Recreance",
+            "description": "The Knights Radiant abandon their oaths, leaving behind their Shardblades and Plate.",
+            "time_extent": {
+                "date_unit": "ES",
+                "start": 2000,
+                "end": 2000,
+                "is_approximate": true
+            },
+            "lane_id": "lane_urithiru",
+            "sub_area": "Radiant Headquarters",
+            "participants": [],
+            "type": "catastrophe",
+            "importance": 10
+        },
+        {
+            "id": "evt_gavilar_death",
+            "title": "Assassination of King Gavilar",
+            "description": "King Gavilar Kholin is assassinated by Szeth on the night of the treaty with the Parshendi.",
+            "time_extent": {
+                "date_unit": "ES",
+                "start": 4495,
+                "end": 4495,
+                "is_approximate": false
+            },
+            "lane_id": "lane_alethkar",
+            "sub_area": "Kholinar Palace",
+            "participants": [
+                "char_dalinar",
+                "char_szeth"
+            ],
+            "type": "death",
+            "importance": 9
+        },
+        {
+            "id": "evt_battle_tower",
+            "title": "Battle of the Tower",
+            "description": "Sadeas betrays Dalinar on the Shattered Plains, leading to Kaladin saving the Kholin army.",
+            "time_extent": {
+                "date_unit": "ES",
+                "start": 4500,
+                "end": 4500,
+                "is_approximate": false
+            },
+            "lane_id": "lane_shattered_plains",
+            "sub_area": "The Tower Plateau",
+            "participants": [
+                "char_dalinar",
+                "char_kaladin"
+            ],
+            "type": "battle",
+            "importance": 9
+        },
+        {
+            "id": "evt_everstorm",
+            "title": "Summoning of the Everstorm",
+            "description": "The Parshendi summon the Everstorm, ending the Era of Solitude and beginning the True Desolation.",
+            "time_extent": {
+                "date_unit": "TD",
+                "start": 0,
+                "end": 0,
+                "is_approximate": false
+            },
+            "lane_id": "lane_shattered_plains",
+            "sub_area": "Narak",
+            "participants": [
+                "char_dalinar",
+                "char_kaladin",
+                "char_szeth"
+            ],
+            "type": "catastrophe",
+            "importance": 10
+        }
+    ]
+}

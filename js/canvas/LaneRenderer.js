@@ -89,6 +89,24 @@ class LaneRenderer {
     }
 
     /**
+     * Get the exact Y position for an event within a lane, accounting for sub_area staggering.
+     * @param {Object} evt
+     * @returns {number}
+     */
+    getEventY(evt) {
+        if (!evt || !evt.lane_id) return 100;
+        const laneTopY = this.getLaneTopY(evt.lane_id);
+        const laneHeight = 80 * state.zoomY;
+        
+        const subArea = evt.sub_area || (evt.metadata && evt.metadata.sub_area) || 'default';
+        const subIndex = dataStore.getSubAreaIndex(evt.lane_id, subArea);
+        const subCount = Math.max(1, dataStore.getSubAreaCount(evt.lane_id));
+        
+        const verticalRatio = (subIndex + 0.5) / subCount;
+        return laneTopY + (verticalRatio * laneHeight);
+    }
+
+    /**
      * Get the lane height constant.
      * @returns {number}
      */

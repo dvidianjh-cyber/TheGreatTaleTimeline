@@ -1,0 +1,469 @@
+{
+    "world_config": {
+        "world_name": "History of Human Civilization",
+        "time_systems": [
+            {
+                "id": "solar",
+                "name": "Solar Year",
+                "abbreviation": "SY",
+                "isPrimary": true
+            }
+        ],
+        "epochs": [
+            {
+                "id": "ep_ad",
+                "label": "Anno Domini",
+                "abbreviation": "AD",
+                "time_system": "solar",
+                "start_tu": 20000,
+                "end_tu": 25000,
+                "color": "#f4f4f9"
+            }
+        ],
+        "rulers": [
+            {
+                "label": "AD Calendar",
+                "epoch": "ep_ad",
+                "visible": true
+            }
+        ]
+    },
+    "lanes": [
+        {
+            "id": "lane_africa",
+            "label": "Africa",
+            "color_hint": "#e6b800",
+            "order": 0
+        },
+        {
+            "id": "lane_asia",
+            "label": "Asia",
+            "color_hint": "#cc3300",
+            "order": 1
+        },
+        {
+            "id": "lane_europe",
+            "label": "Europe",
+            "color_hint": "#3366cc",
+            "order": 2
+        },
+        {
+            "id": "lane_americas",
+            "label": "The Americas",
+            "color_hint": "#339933",
+            "order": 3
+        },
+        {
+            "id": "lane_oceania",
+            "label": "Oceania",
+            "color_hint": "#009999",
+            "order": 4
+        }
+    ],
+    "entities": [
+        {
+            "id": "char_early_humans",
+            "name": "Early Human Hunter-Gatherers",
+            "metadata": {
+                "type": "Population",
+                "color": "#8c8c8c",
+                "sub_area": "Global Paleolithic"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -20000,
+                "birth_lane_id": "lane_africa",
+                "birth_sub_area": "East Africa",
+                "death": -10000,
+                "death_lane_id": "lane_asia",
+                "death_sub_area": "Eurasia",
+                "is_approximate": true
+            }
+        },
+        {
+            "id": "char_mesopotamians",
+            "name": "Mesopotamian Civilizations",
+            "metadata": {
+                "type": "Civilization",
+                "color": "#cc5200",
+                "sub_area": "Mesopotamia"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -3500,
+                "birth_lane_id": "lane_asia",
+                "birth_sub_area": "Sumer",
+                "death": -539,
+                "death_lane_id": "lane_asia",
+                "death_sub_area": "Babylon"
+            }
+        },
+        {
+            "id": "char_egyptians",
+            "name": "Ancient Egyptians",
+            "metadata": {
+                "type": "Civilization",
+                "color": "#e6b800",
+                "sub_area": "Nile River Valley"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -3100,
+                "birth_lane_id": "lane_africa",
+                "birth_sub_area": "Upper Egypt",
+                "death": -30,
+                "death_lane_id": "lane_africa",
+                "death_sub_area": "Alexandria"
+            }
+        },
+        {
+            "id": "char_indus",
+            "name": "Indus Valley Civilization",
+            "metadata": {
+                "type": "Civilization",
+                "color": "#993333",
+                "sub_area": "Indus River Basin"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -3300,
+                "birth_lane_id": "lane_asia",
+                "birth_sub_area": "Harappa",
+                "death": -1300,
+                "death_lane_id": "lane_asia",
+                "death_sub_area": "Mohenjo-daro"
+            }
+        },
+        {
+            "id": "char_chinese",
+            "name": "Chinese Dynasties",
+            "metadata": {
+                "type": "Civilization",
+                "color": "#cc0000",
+                "sub_area": "East Asia"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -2070,
+                "birth_lane_id": "lane_asia",
+                "birth_sub_area": "Yellow River Valley",
+                "death": 1912,
+                "death_lane_id": "lane_asia",
+                "death_sub_area": "Beijing"
+            }
+        },
+        {
+            "id": "char_romans",
+            "name": "Roman Civilization",
+            "metadata": {
+                "type": "Civilization",
+                "color": "#660066",
+                "sub_area": "Mediterranean"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -753,
+                "birth_lane_id": "lane_europe",
+                "birth_sub_area": "Latium",
+                "death": 1453,
+                "death_lane_id": "lane_europe",
+                "death_sub_area": "Constantinople"
+            }
+        },
+        {
+            "id": "char_maya",
+            "name": "Maya Civilization",
+            "metadata": {
+                "type": "Civilization",
+                "color": "#006600",
+                "sub_area": "Mesoamerica"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -2000,
+                "birth_lane_id": "lane_americas",
+                "birth_sub_area": "El Mirador Basin",
+                "death": 1697,
+                "death_lane_id": "lane_americas",
+                "death_sub_area": "Tayasal"
+            }
+        },
+        {
+            "id": "char_polynesians",
+            "name": "Polynesian Explorers",
+            "metadata": {
+                "type": "Population",
+                "color": "#009999",
+                "sub_area": "Pacific Islands"
+            },
+            "lifespan": {
+                "date_unit": "AD",
+                "birth": -3000,
+                "birth_lane_id": "lane_oceania",
+                "birth_sub_area": "Bismarck Archipelago",
+                "death": 1500,
+                "death_lane_id": "lane_oceania",
+                "death_sub_area": "Hawaii/New Zealand"
+            }
+        }
+    ],
+    "events": [
+        {
+            "id": "evt_global_migration",
+            "title": "Late Glacial Migrations",
+            "description": "Continued spread of human populations across continents, including the peopling of the Americas.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -20000,
+                "end": -10000,
+                "is_approximate": true
+            },
+            "lane_id": "lane_americas",
+            "sub_area": "Beringia Land Bridge & The Americas",
+            "participants": [
+                "char_early_humans"
+            ],
+            "type": "migration",
+            "importance": 9
+        },
+        {
+            "id": "evt_agricultural_revolution",
+            "title": "Agricultural Revolution",
+            "description": "Transition from hunter-gatherer societies to settled agriculture.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -10000,
+                "end": -8000,
+                "is_approximate": true
+            },
+            "lane_id": "lane_asia",
+            "sub_area": "The Fertile Crescent",
+            "participants": [
+                "char_early_humans"
+            ],
+            "type": "founding",
+            "importance": 10
+        },
+        {
+            "id": "evt_founding_uruk",
+            "title": "Rise of Sumer and Uruk",
+            "description": "Development of the first cities and writing systems (Cuneiform) in Mesopotamia.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -3500,
+                "end": -3000
+            },
+            "lane_id": "lane_asia",
+            "sub_area": "Mesopotamia (Modern-day Iraq)",
+            "participants": [
+                "char_mesopotamians"
+            ],
+            "type": "founding",
+            "importance": 8
+        },
+        {
+            "id": "evt_unification_egypt",
+            "title": "Unification of Upper and Lower Egypt",
+            "description": "Narmer unifies Egypt, establishing the first dynasty.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -3100,
+                "end": -3100
+            },
+            "lane_id": "lane_africa",
+            "sub_area": "Nile River Valley",
+            "participants": [
+                "char_egyptians"
+            ],
+            "type": "political",
+            "importance": 9
+        },
+        {
+            "id": "evt_indus_mature",
+            "title": "Mature Harappan Phase",
+            "description": "Peak of the Indus Valley Civilization with advanced urban planning.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -2600,
+                "end": -1900
+            },
+            "lane_id": "lane_asia",
+            "sub_area": "Indus River Basin (Modern-day Pakistan/India)",
+            "participants": [
+                "char_indus"
+            ],
+            "type": "political",
+            "importance": 8
+        },
+        {
+            "id": "evt_xia_dynasty",
+            "title": "Founding of the Xia Dynasty",
+            "description": "The first traditional Chinese dynasty emerges.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -2070,
+                "end": -2070,
+                "is_approximate": true
+            },
+            "lane_id": "lane_asia",
+            "sub_area": "Yellow River Valley",
+            "participants": [
+                "char_chinese"
+            ],
+            "type": "founding",
+            "importance": 8
+        },
+        {
+            "id": "evt_rome_founded",
+            "title": "Founding of Rome",
+            "description": "Legendary founding of the city of Rome.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -753,
+                "end": -753
+            },
+            "lane_id": "lane_europe",
+            "sub_area": "Palatine Hill, Italian Peninsula",
+            "participants": [
+                "char_romans"
+            ],
+            "type": "founding",
+            "importance": 7
+        },
+        {
+            "id": "evt_qin_unification",
+            "title": "Unification of China",
+            "description": "Qin Shi Huang establishes the first unified Chinese empire.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -221,
+                "end": -221
+            },
+            "lane_id": "lane_asia",
+            "sub_area": "Central Plains, East Asia",
+            "participants": [
+                "char_chinese"
+            ],
+            "type": "political",
+            "importance": 9
+        },
+        {
+            "id": "evt_roman_empire",
+            "title": "Establishment of the Roman Empire",
+            "description": "Augustus becomes the first Roman Emperor, ending the Republic.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": -27,
+                "end": -27
+            },
+            "lane_id": "lane_europe",
+            "sub_area": "Rome, Mediterranean Basin",
+            "participants": [
+                "char_romans"
+            ],
+            "type": "political",
+            "importance": 9
+        },
+        {
+            "id": "evt_maya_classic",
+            "title": "Maya Classic Period",
+            "description": "Peak of Maya urbanization, monument building, and intellectual achievements.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": 250,
+                "end": 900
+            },
+            "lane_id": "lane_americas",
+            "sub_area": "Mesoamerica (Yucatán Peninsula & Guatemala)",
+            "participants": [
+                "char_maya"
+            ],
+            "type": "political",
+            "importance": 8
+        },
+        {
+            "id": "evt_fall_of_rome",
+            "title": "Fall of the Western Roman Empire",
+            "description": "Deposition of Romulus Augustulus, marking the end of the Western Roman Empire.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": 476,
+                "end": 476
+            },
+            "lane_id": "lane_europe",
+            "sub_area": "Ravenna, Italian Peninsula",
+            "participants": [
+                "char_romans"
+            ],
+            "type": "catastrophe",
+            "importance": 10
+        },
+        {
+            "id": "evt_polynesian_expansion",
+            "title": "Polynesian Expansion to Hawaii and Easter Island",
+            "description": "Long-distance ocean voyaging leads to the settlement of remote Pacific islands.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": 900,
+                "end": 1200,
+                "is_approximate": true
+            },
+            "lane_id": "lane_oceania",
+            "sub_area": "The Polynesian Triangle",
+            "participants": [
+                "char_polynesians"
+            ],
+            "type": "migration",
+            "importance": 8
+        },
+        {
+            "id": "evt_mongol_empire",
+            "title": "Rise of the Mongol Empire",
+            "description": "Genghis Khan unites the Mongol tribes and begins vast conquests across Asia and Europe.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": 1206,
+                "end": 1368
+            },
+            "lane_id": "lane_asia",
+            "sub_area": "Eurasian Steppe",
+            "participants": [
+                "char_chinese"
+            ],
+            "type": "war",
+            "importance": 9
+        },
+        {
+            "id": "evt_columbian_exchange",
+            "title": "Columbian Exchange",
+            "description": "Christopher Columbus reaches the Americas, initiating widespread global interconnection.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": 1492,
+                "end": 1492
+            },
+            "lane_id": "lane_americas",
+            "sub_area": "Hispaniola, Caribbean Sea",
+            "participants": [
+                "char_maya"
+            ],
+            "type": "quest",
+            "importance": 10
+        },
+        {
+            "id": "evt_industrial_revolution",
+            "title": "Industrial Revolution",
+            "description": "Transition to new manufacturing processes, vastly accelerating human technological progress.",
+            "time_extent": {
+                "date_unit": "AD",
+                "start": 1760,
+                "end": 1840
+            },
+            "lane_id": "lane_europe",
+            "sub_area": "Great Britain",
+            "participants": [],
+            "type": "creation",
+            "importance": 10
+        }
+    ]
+}

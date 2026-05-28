@@ -1,5 +1,10 @@
 [
   {
+    "id": "earth",
+    "world_name": "History of Human Civilization",
+    "file": "data/sampleData_earth.json"
+  },
+  {
     "id": "arda",
     "world_name": "Tolkein's Arda",
     "file": "data/sampleData_arda.json"
