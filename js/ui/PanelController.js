@@ -11,6 +11,7 @@ import bus, { Events } from '../core/EventBus.js';
 import state from '../core/StateManager.js';
 import flyoutPanel from './FlyoutPanel.js';
 import dataStore from '../data/DataStore.js';
+import measureTool from '../canvas/MeasureTool.js';
 
 class PanelController {
     constructor() {
@@ -53,6 +54,9 @@ class PanelController {
                 <div class="toolbar-control-group">
                     <button class="toolbar-btn" id="btn-measure" title="Time Measure Tool (M)">
                         <i data-lucide="ruler"></i>
+                    </button>
+                    <button class="toolbar-btn" id="btn-measure-clear" title="Clear Measurements">
+                        <i data-lucide="trash-2"></i>
                     </button>
                 </div>
                 <div class="toolbar-divider"></div>
@@ -108,6 +112,13 @@ class PanelController {
             });
         }
 
+        const btnMeasureClear = this._toolbar.querySelector('#btn-measure-clear');
+        if (btnMeasureClear) {
+            btnMeasureClear.addEventListener('click', () => {
+                measureTool.clear();
+            });
+        }
+
         // Zoom controls (floating)
         const sliderX = document.getElementById('slider-zoom-x');
         const sliderY = document.getElementById('slider-zoom-y');
@@ -130,11 +141,25 @@ class PanelController {
 
         const fitToData = () => {
             if (!dataStore.hasData) return;
-            const { minTu, maxTu } = dataStore.getTimeExtents();
+            
+            const config = state.worldConfig || {};
+            if (config.default_mode) {
+                setMode(config.default_mode);
+            }
+
+            let minTu, maxTu;
+            if (config.default_visible_timespan && Array.isArray(config.default_visible_timespan) && config.default_visible_timespan.length === 2) {
+                minTu = config.default_visible_timespan[0];
+                maxTu = config.default_visible_timespan[1];
+            } else {
+                const extents = dataStore.getTimeExtents();
+                minTu = extents.minTu;
+                maxTu = extents.maxTu;
+            }
+
             const totalTu = maxTu - minTu;
             
             // Calculate necessary zoomX so that totalTu fits in viewportWidth
-            // zoomX = (viewportWidth / totalTu) / 0.05
             // Provide a small margin (e.g., 5% on each side) -> multiply by 0.9
             const viewportWidth = state.viewportWidth || window.innerWidth;
             let targetZoomX = ((viewportWidth * 0.9) / (totalTu || 1000)) / 0.05;
@@ -147,8 +172,6 @@ class PanelController {
             state.setZoomY(1);
             
             // Pan so that minTu starts at 5% of viewport width
-            // panOffset.x is negative. -panX / pptu = startTu
-            // We want startTu to map to a panX that leaves a margin.
             const pptu = state.pixelsPerTU;
             const marginX = viewportWidth * 0.05;
             const targetPanX = -(minTu * pptu) + marginX;

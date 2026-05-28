@@ -112,9 +112,10 @@ class CanvasManager {
             this._isMeasuring = active;
             if (active) {
                 this.app.renderer.events.cursorStyles.default = 'crosshair';
+                this.app.canvas.style.cursor = 'crosshair';
             } else {
                 this.app.renderer.events.cursorStyles.default = 'grab';
-                measureTool.clear();
+                this.app.canvas.style.cursor = 'grab';
             }
         });
 

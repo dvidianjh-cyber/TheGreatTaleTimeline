@@ -62,6 +62,14 @@ class SchemaValidator {
         if (typeof config.world_name !== 'string' || !config.world_name.trim()) {
             errors.push('world_name is required and must be a non-empty string.');
         }
+        if (config.default_mode !== undefined && !['geographic', 'biographical'].includes(config.default_mode)) {
+            errors.push('default_mode must be either "geographic" or "biographical".');
+        }
+        if (config.default_visible_timespan !== undefined) {
+            if (!Array.isArray(config.default_visible_timespan) || config.default_visible_timespan.length !== 2 || typeof config.default_visible_timespan[0] !== 'number' || typeof config.default_visible_timespan[1] !== 'number') {
+                errors.push('default_visible_timespan must be an array of two numbers.');
+            }
+        }
         if (!Array.isArray(config.time_systems) || config.time_systems.length === 0) {
             errors.push('time_systems must be a non-empty array.');
         } else {
