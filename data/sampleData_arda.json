@@ -396,23 +396,6 @@
       "importance": 10
     },
     {
-      "id": "evt_birth_feanor",
-      "title": "Birth of Fëanor",
-      "description": "Curufinwë Fëanáro is born in Tirion, the mightiest of the Noldor.",
-      "time_extent": {
-        "date_unit": "YT",
-        "start": 299.52,
-        "end": 299.52,
-        "is_approximate": false
-      },
-      "lane_id": "lane_valinor",
-      "participants": [
-        "char_feanor"
-      ],
-      "type": "birth",
-      "importance": 8
-    },
-    {
       "id": "evt_creation_silmarils",
       "title": "Creation of the Silmarils",
       "description": "Fëanor captures the light of the Two Trees in three perfect jewels.",
@@ -516,24 +499,6 @@
       "importance": 9
     },
     {
-      "id": "evt_death_feanor",
-      "title": "Death of Fëanor",
-      "description": "Fëanor is slain by Balrogs during the Dagor-nuin-Giliath.",
-      "time_extent": {
-        "date_unit": "FA",
-        "start": 6,
-        "end": 6,
-        "is_approximate": false
-      },
-      "lane_id": "lane_beleriand",
-      "sub_area": "Hithlum",
-      "participants": [
-        "char_feanor"
-      ],
-      "type": "death",
-      "importance": 8
-    },
-    {
       "id": "evt_mereth_aderthad",
       "title": "Mereth Aderthad",
       "description": "The Feast of Reuniting held by Fingolfin near the Pools of Ivrin.",
@@ -600,22 +565,6 @@
       ],
       "type": "battle",
       "importance": 8
-    },
-    {
-      "id": "evt_test_stacking",
-      "title": "Overlapping Test Event",
-      "description": "An event created to test vertical stacking in the same lane.",
-      "time_extent": {
-        "date_unit": "FA",
-        "start": 134,
-        "end": 134,
-        "is_approximate": false
-      },
-      "lane_id": "lane_beleriand",
-      "sub_area": "Doriath",
-      "participants": [],
-      "type": "political",
-      "importance": 0
     },
     {
       "id": "evt_nirnaeth",
